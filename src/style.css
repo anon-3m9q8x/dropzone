@@ -674,6 +674,12 @@ footer {
   pointer-events: none;
   text-shadow: 0 1px 5px #000;
 }
+/* Dark plates keep the HUD readable against the daytime sky. */
+.range-top > span {
+  background: #0d1928bd;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
 .range-top small {
   margin-left: 12px;
   color: #90a9c4;
@@ -774,8 +780,11 @@ footer {
 }
 .range-hint {
   font-size: 10px;
-  color: #a8bed3;
+  color: #c3d4e6;
   text-shadow: 0 1px 4px #000;
+  background: #0d1928a6;
+  border-radius: 4px;
+  padding: 5px 10px;
 }
 .overlay {
   position: absolute;
@@ -1085,36 +1094,6 @@ footer {
 .mode-card .secondary {
   gap: 8px;
   font-size: 11px;
-}
-.view-selector {
-  display: flex;
-  gap: 7px;
-  margin: 20px 0;
-}
-.view-selector button {
-  flex: 1;
-  background: #1a2d43;
-  border: 1px solid #405873;
-  color: #c8d7e8;
-  border-radius: 5px;
-  padding: 10px 6px;
-  font-size: 10px;
-}
-.view-selector button[aria-pressed="true"] {
-  border-color: #f69a60;
-  color: #ffb886;
-  background: #f69a6012;
-}
-.view-note {
-  position: absolute;
-  top: 145px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #122338d9;
-  padding: 10px 14px;
-  color: #c7dbf1;
-  font-size: 11px;
-  pointer-events: none;
 }
 .battle-feed {
   position: absolute;

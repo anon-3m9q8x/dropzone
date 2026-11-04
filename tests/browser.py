@@ -21,7 +21,7 @@ with sync_playwright() as p:
   page.set_viewport_size({'width':width,'height':1000});page.wait_for_timeout(200);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
   if width<900:assert page.locator('.hero .primary').is_disabled()
   if width==390:page.screenshot(path=str(ROOT/'docs/screenshots/home-mobile.png'),full_page=True)
- page.set_viewport_size({'width':1440,'height':1080});page.get_by_role('button',name='? 操作ガイド').click();assert page.locator('.help-row').count()==12
+ page.set_viewport_size({'width':1440,'height':1080});page.get_by_role('button',name='? 操作ガイド').click();assert page.locator('.help-row').count()==11
  data=page.evaluate("JSON.parse(localStorage.getItem('dropzone-save-v1'))");assert data['stats']['matches']==0 and data['results']==[] and data['currentMatch'] is None
  # Corrupt/forward-version data must survive settings edits.
  page.evaluate("localStorage.setItem('dropzone-save-v1','{\"schemaVersion\":999}')");page.reload();page.get_by_role('button',name='⚙ 設定').click();page.locator('input[type=range]').first.fill('2');assert page.evaluate("localStorage.getItem('dropzone-save-v1')")=='{"schemaVersion":999}'

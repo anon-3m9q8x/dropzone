@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CONFIG } from "../core/config";
+import { CONFIG, WEAPON_IDS } from "../core/config";
 import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 import {
   createTraining,
@@ -7,14 +7,15 @@ import {
   stepTraining,
   switchWeapon,
 } from "../core/training";
-import { createBattle, stepBattle, bodyBox } from "../core/battle";
+import { createBattle, stepBattle } from "../core/battle";
 import type { Battle, PlayMode } from "../core/battle";
 import { human, disposeObject } from "./human";
-import { trainingColliders, rayAabb, targetBox } from "../core/collision";
+import { trainingColliders } from "../core/collision";
+import { buildWeapon } from "./weapons";
+import { buildEnvironment, SKY } from "./environment";
+import type { WeaponModel } from "./weapons";
 import type { SettingsV1, WeaponId } from "../core/types";
 export interface Hud {
-  reticleX: number;
-  reticleY: number;
   phase: string;
   matchId: string;
   x: number;
@@ -26,7 +27,6 @@ export interface Hud {
   alive: number;
   kills: number;
   zone: number;
-  view: number;
   outcome: string | null;
   place: number | null;
   mode: PlayMode;
@@ -56,10 +56,14 @@ export class Range {
   );
   private aimCamera = new THREE.PerspectiveCamera();
   private battle: Battle | null = null;
-  private view = 1;
-  private reticle = { x: 50, y: 50 };
-  private gun!: THREE.Group;
-  private avatar = human(0x47aaff);
+  // First-person weapon and arms, drawn in a second pass over the world.
+  private viewScene = new THREE.Scene();
+  private viewRoot = new THREE.Group();
+  private viewCamera = new THREE.PerspectiveCamera(75, 1, 0.01, 10);
+  private gun = new THREE.Group();
+  private weapons = new Map<WeaponId, WeaponModel>();
+  private aim = 0;
+  private kick = 0;
   private actors = new Map<string, THREE.Group>();
   private supplies = new Map<string, THREE.Mesh>();
   private zoneMesh: THREE.LineLoop | null = null;
@@ -89,7 +93,10 @@ export class Range {
   private audio: AudioContext | null = null;
   private cleanups: (() => void)[] = [];
   private targets = new Map<string, THREE.Mesh>();
-  private flash: THREE.Mesh;
+  private flash = new THREE.Mesh(
+    new THREE.SphereGeometry(0.022, 8, 6),
+    new THREE.MeshBasicMaterial({ color: 0xffd28a }),
+  );
   private settings: SettingsV1;
   private frameCount = 0;
   private fps = 0;
@@ -110,7 +117,7 @@ export class Range {
       antialias: settings.graphicsQuality !== "low",
       powerPreference: "high-performance",
     });
-    this.renderer.setClearColor(0x0b1522);
+    this.renderer.setClearColor(SKY);
     this.renderer.setPixelRatio(
       Math.min(
         devicePixelRatio,
@@ -126,50 +133,14 @@ export class Range {
       "aria-label",
       "DROPZONE 3D 射撃練習場",
     );
-    this.scene.fog = new THREE.Fog(0x0b1522, 25, 80);
-    this.scene.add(new THREE.HemisphereLight(0x9ac8ff, 0x35404a, 2.5));
-    const sun = new THREE.DirectionalLight(0xffffff, 2);
-    sun.position.set(-8, 20, -8);
-    this.scene.add(sun);
     const material = (color: number) =>
       new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
-    for (const box of this.battle?.boxes ?? trainingColliders) {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(
-          box.max.x - box.min.x,
-          box.max.y - box.min.y,
-          box.max.z - box.min.z,
-        ),
-        material(
-          box.id === "ground"
-            ? 0x182533
-            : box.id.includes("cover")
-              ? 0x425369
-              : 0x26384b,
-        ),
-      );
-      mesh.position.set(
-        (box.max.x + box.min.x) / 2,
-        (box.max.y + box.min.y) / 2,
-        (box.max.z + box.min.z) / 2,
-      );
-      this.scene.add(mesh);
-      if (box.id.includes("cover")) {
-        const edges = new THREE.LineSegments(
-          new THREE.EdgesGeometry(mesh.geometry),
-          new THREE.LineBasicMaterial({ color: 0x6d8aa3 }),
-        );
-        mesh.add(edges);
-      }
-    }
-    const grid = new THREE.GridHelper(
-      this.battle ? 192 : 40,
-      this.battle ? 96 : 40,
-      0x426480,
-      0x273d51,
+    buildEnvironment(
+      this.scene,
+      this.battle?.boxes ?? trainingColliders,
+      !!this.battle,
+      settings.graphicsQuality,
     );
-    grid.position.set(0, 0.012, 15);
-    this.scene.add(grid);
     for (const target of this.mode === "training"
       ? this.session.training.targets
       : []) {
@@ -187,40 +158,23 @@ export class Range {
       mesh.add(center);
       this.targets.set(target.id, mesh);
     }
-    // Simple first-person tool: original geometry, no downloaded assets.
-    const gun = new THREE.Group();
-    this.gun = gun;
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.13, 0.46),
-      material(0x344359),
-    );
-    body.position.set(0.22, -0.21, -0.43);
-    gun.add(body);
-    const accent = new THREE.Mesh(
-      new THREE.BoxGeometry(0.03, 0.035, 0.25),
-      material(0xf28c47),
-    );
-    accent.position.set(0.22, -0.13, -0.44);
-    gun.add(accent);
-    this.flash = new THREE.Mesh(
-      new THREE.SphereGeometry(0.055, 6, 4),
-      new THREE.MeshBasicMaterial({ color: 0xffd28a }),
-    );
-    this.flash.position.set(0.22, -0.19, -0.72);
-    this.flash.visible = false;
-    gun.add(this.flash);
-    const handMaterial = material(0xd6a27e);
-    for (const x of [0.17, 0.27]) {
-      const hand = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.038, 0.13, 3, 6),
-        handMaterial,
-      );
-      hand.position.set(x, -0.29, -0.32);
-      hand.rotation.x = -0.6;
-      gun.add(hand);
+    this.renderer.autoClear = false;
+    this.viewScene.add(new THREE.HemisphereLight(0xe8f0fa, 0x4a4f57, 3.2));
+    const key = new THREE.DirectionalLight(0xfff6e8, 3.2);
+    key.position.set(1.5, 3, 1);
+    this.viewScene.add(key);
+    const rim = new THREE.DirectionalLight(0xa8c8ff, 1.1);
+    rim.position.set(-2, 1, -2);
+    this.viewScene.add(rim);
+    this.viewScene.add(this.viewRoot);
+    this.viewRoot.add(this.gun);
+    for (const id of WEAPON_IDS) {
+      const model = buildWeapon(id);
+      model.group.visible = false;
+      this.weapons.set(id, model);
+      this.gun.add(model.group);
     }
-    this.camera.add(gun);
-    this.scene.add(this.avatar);
+    this.flash.visible = false;
     if (this.battle) {
       for (const bot of this.session.bots) {
         const model = human(0xe6814f);
@@ -307,14 +261,10 @@ export class Range {
       if (!e.repeat) {
         if (e.code === "Space") this.jump = true;
         if (e.code === "KeyR") this.reload = true;
-        if (e.code === "KeyV") this.setView((this.view % 3) + 1);
         if (e.code === "KeyE") this.interact = true;
         if (e.code === "KeyH") this.heal = true;
-        if (["Digit1", "Digit2", "Digit3"].includes(e.code))
-          switchWeapon(
-            this.session,
-            (["ar", "smg", "dmr"] as const)[Number(e.code.slice(-1)) - 1]!,
-          );
+        const slot = /^Digit([1-6])$/.exec(e.code)?.[1];
+        if (slot) switchWeapon(this.session, WEAPON_IDS[Number(slot) - 1]!);
       }
       this.keys.add(e.code);
     }) as EventListener);
@@ -450,8 +400,6 @@ export class Range {
   private publish() {
     const w = this.session.player.inventory.slots[0]!;
     this.onHud({
-      reticleX: this.reticle.x,
-      reticleY: this.reticle.y,
       phase: this.session.phase,
       matchId: this.session.matchId,
       x: this.session.player.position.x,
@@ -465,7 +413,6 @@ export class Range {
         Number(this.session.player.alive),
       kills: this.session.player.eliminationCount,
       zone: this.battle?.radius ?? 0,
-      view: this.view,
       outcome: this.battle?.outcome ?? null,
       place: this.battle?.place ?? null,
       mode: this.mode,
@@ -556,21 +503,22 @@ export class Range {
                 : this.session.bots.find((b) => b.id === e.shooterId);
             if (actor && e.hit.point)
               this.addTracer(
-                new THREE.Vector3(
-                  actor.position.x +
-                    Math.cos(actor.facing.yaw) * 0.22 -
-                    Math.sin(actor.facing.yaw) * 0.65,
-                  actor.position.y +
-                    (actor.kind === "player"
-                      ? (this.session.player.crouching ? 1.08 : 1.645) - 0.19
-                      : 1.03),
-                  actor.position.z -
-                    Math.sin(actor.facing.yaw) * 0.22 -
-                    Math.cos(actor.facing.yaw) * 0.65,
-                ),
+                e.shooterId === "player"
+                  ? this.flash.getWorldPosition(new THREE.Vector3())
+                  : new THREE.Vector3(
+                      actor.position.x +
+                        Math.cos(actor.facing.yaw) * 0.22 -
+                        Math.sin(actor.facing.yaw) * 0.65,
+                      actor.position.y + 1.03,
+                      actor.position.z -
+                        Math.sin(actor.facing.yaw) * 0.22 -
+                        Math.cos(actor.facing.yaw) * 0.65,
+                    ),
                 new THREE.Vector3(e.hit.point.x, e.hit.point.y, e.hit.point.z),
                 e.shooterId === "player",
               );
+            if (e.shooterId === "player" && !this.settings.reducedMotion)
+              this.kick = 1;
             if (hit) this.hitUntil = now + 150;
             this.flash.visible =
               e.shooterId === "player" && !this.settings.reducedMotion;
@@ -594,72 +542,15 @@ export class Range {
       p.position.z,
     );
     this.aimCamera.position.copy(eye);
-    const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(
-      this.aimCamera.quaternion,
-    );
     this.camera.position.copy(eye);
     this.camera.quaternion.copy(this.aimCamera.quaternion);
-    this.avatar.position.copy(p.position);
-    this.avatar.rotation.y = p.facing.yaw;
-    this.avatar.scale.y = p.crouching ? 0.66 : 1;
-    this.avatar.visible = this.view !== 1;
-    const walking =
-      this.keys.has("KeyW") ||
-      this.keys.has("KeyA") ||
-      this.keys.has("KeyS") ||
-      this.keys.has("KeyD");
-    const gait =
-      walking && !this.settings.reducedMotion
-        ? Math.sin(this.session.elapsedSeconds * 10) * 0.35
-        : 0;
-    this.avatar.getObjectByName("legL")!.rotation.x = gait;
-    this.avatar.getObjectByName("legR")!.rotation.x = -gait;
-    this.gun.visible = this.view === 1;
-    if (this.view !== 1) {
-      const offset = direction.clone().multiplyScalar(this.view === 2 ? 4 : -4);
-      offset.y += 0.65;
-      let distance = offset.length();
-      offset.normalize();
-      for (const b of this.battle?.boxes ?? trainingColliders) {
-        const d = rayAabb(eye, offset, b, distance);
-        if (d !== null) distance = Math.max(0.15, d - 0.2);
-      }
-      this.camera.position.copy(eye).addScaledVector(offset, distance);
-      this.camera.lookAt(
-        this.view === 2 ? eye : eye.clone().addScaledVector(direction, 35),
-      );
-    }
     const fov = p.isAiming ? 60 : 75;
     if (this.camera.fov !== fov) {
       this.camera.fov = fov;
       this.camera.updateProjectionMatrix();
     }
     this.camera.updateMatrixWorld(true);
-    if (this.view === 3) {
-      let distance = 85;
-      const targets = this.battle
-        ? this.session.bots.filter((x) => x.alive).map(bodyBox)
-        : this.session.training.targets
-            .filter((t) => this.session.fallenTargets[t.id] === undefined)
-            .map(targetBox);
-      for (const box of [
-        ...(this.battle?.boxes ?? trainingColliders),
-        ...targets,
-      ]) {
-        const hit = rayAabb(eye, direction, box, distance);
-        if (hit !== null) distance = hit;
-      }
-      const point = eye
-        .clone()
-        .addScaledVector(direction, distance)
-        .project(this.camera);
-      this.reticle = {
-        x: (point.x * 0.5 + 0.5) * 100,
-        y: (-0.5 * point.y + 0.5) * 100,
-      };
-      if (this.camera.position.distanceTo(eye) < 0.7)
-        this.avatar.visible = false;
-    } else this.reticle = { x: 50, y: 50 };
+    this.updateViewModel(dt);
     if (this.mode === "training") this.syncTargets();
     for (const bot of this.session.bots) {
       const model = this.actors.get(bot.id)!;
@@ -704,16 +595,67 @@ export class Range {
           this.tracers.splice(this.tracers.indexOf(t), 1);
         }
       }
+    this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
+    this.renderer.clearDepth();
+    this.renderer.render(this.viewScene, this.viewCamera);
     this.flash.visible = false;
     if (now - this.lastHud >= 100) {
       this.lastHud = now;
       this.publish();
     }
   };
-  setView(view: number) {
-    this.view = Math.max(1, Math.min(3, view));
-    this.publish();
+  private updateViewModel(dt: number) {
+    const p = this.session.player;
+    const id = p.inventory.slots[0]!.id;
+    const model = this.weapons.get(id)!;
+    for (const [key, m] of this.weapons) m.group.visible = key === id;
+    if (this.flash.parent !== model.muzzle) model.muzzle.add(this.flash);
+    this.viewRoot.position.copy(this.camera.position);
+    this.viewRoot.quaternion.copy(this.camera.quaternion);
+    // Own camera with a short near plane so the stock and arms never clip.
+    this.viewCamera.position.copy(this.camera.position);
+    this.viewCamera.quaternion.copy(this.camera.quaternion);
+    if (
+      this.viewCamera.fov !== this.camera.fov ||
+      this.viewCamera.aspect !== this.camera.aspect
+    ) {
+      this.viewCamera.fov = this.camera.fov;
+      this.viewCamera.aspect = this.camera.aspect;
+      this.viewCamera.updateProjectionMatrix();
+    }
+    const still = this.settings.reducedMotion;
+    const blend = still ? 1 : 1 - Math.exp(-dt * 14);
+    this.aim += ((p.isAiming ? 1 : 0) - this.aim) * blend;
+    this.kick = Math.max(0, this.kick - dt * 9);
+    const moving =
+      !still &&
+      this.session.phase === "playing" &&
+      ["KeyW", "KeyA", "KeyS", "KeyD"].some((k) => this.keys.has(k));
+    const t = this.session.elapsedSeconds * (p.isSprinting ? 13 : 9);
+    const sway = moving ? 1 - this.aim * 0.85 : 0;
+    const sprint = p.isSprinting && !p.isAiming ? 1 : 0;
+    // Hip: weapon low and right. ADS: optic centred on the eye line.
+    const scale = 0.62;
+    this.gun.scale.setScalar(scale);
+    this.gun.position.set(
+      THREE.MathUtils.lerp(0.11, 0, this.aim) + Math.sin(t) * 0.005 * sway,
+      THREE.MathUtils.lerp(-0.115, -model.sightHeight * scale, this.aim) -
+        Math.abs(Math.cos(t)) * 0.005 * sway -
+        sprint * 0.03,
+      THREE.MathUtils.lerp(
+        id === "hg" ? -0.34 : -0.3,
+        id === "dmr" ? -0.085 : id === "hg" ? -0.22 : -0.08,
+        this.aim,
+      ) +
+        this.kick * (id === "sg" ? 0.045 : 0.02),
+    );
+    if (model.pump) model.pump.position.z = -0.37 + this.kick * 0.05;
+    this.gun.rotation.set(
+      this.kick * 0.035 - sprint * 0.25,
+      THREE.MathUtils.lerp(0.07, 0, this.aim) + sprint * 0.45,
+      sprint * 0.2,
+    );
   }
   private addTracer(from: THREE.Vector3, to: THREE.Vector3, player: boolean) {
     if (this.tracers.length >= 100) {
@@ -792,19 +734,23 @@ export class Range {
     this.cleanups.forEach((fn) => fn());
     if (this.controls.isLocked) this.controls.unlock();
     this.controls.dispose();
-    this.scene.traverse((obj) => {
-      if (
-        obj instanceof THREE.Mesh ||
-        obj instanceof THREE.LineSegments ||
-        obj instanceof THREE.Line
-      ) {
-        obj.geometry.dispose();
-        const materials = Array.isArray(obj.material)
-          ? obj.material
-          : [obj.material];
-        materials.forEach((m) => m.dispose());
-      }
-    });
+    for (const root of [this.scene, this.viewScene])
+      root.traverse((obj) => {
+        if (
+          obj instanceof THREE.Mesh ||
+          obj instanceof THREE.LineSegments ||
+          obj instanceof THREE.Line
+        ) {
+          obj.geometry.dispose();
+          const materials = Array.isArray(obj.material)
+            ? obj.material
+            : [obj.material];
+          materials.forEach((m) => {
+          if ("map" in m && m.map instanceof THREE.Texture) m.map.dispose();
+          m.dispose();
+        });
+        }
+      });
     this.renderer.dispose();
     this.renderer.domElement.remove();
     void this.audio?.close().catch(() => {});

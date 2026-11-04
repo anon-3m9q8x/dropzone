@@ -114,6 +114,25 @@ describe("training simulation", () => {
     ticks(s, 1, { ...emptyInput(), fireHeld: true });
     expect(s.training.shotsFired).toBe(2);
   });
+  it("shotgun fires 8 pellets per semi-auto pull from one shell", () => {
+    const s = play();
+    switchWeapon(s, "sg");
+    ticks(s, 1);
+    ticks(s, 60, { ...emptyInput(), fireHeld: true });
+    expect(s.training.shotsFired).toBe(8);
+    expect(s.practiceWeapons.sg.magazine).toBe(5);
+  });
+  it("LMG and handgun use their own magazines and fire modes", () => {
+    const s = play();
+    switchWeapon(s, "lmg");
+    ticks(s, 60, { ...emptyInput(), fireHeld: true });
+    expect(s.practiceWeapons.lmg.magazine).toBe(90);
+    switchWeapon(s, "hg");
+    ticks(s, 1);
+    ticks(s, 60, { ...emptyInput(), fireHeld: true });
+    expect(s.practiceWeapons.hg.magazine).toBe(14);
+    expect(s.practiceWeapons.ar.magazine).toBe(30);
+  });
   it("sprint blocks shooting/reloading, ADS overrides sprint", () => {
     const s = play();
     ticks(s, 30, { ...emptyInput(), sprint: true, fireHeld: true });
