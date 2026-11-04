@@ -384,7 +384,7 @@ export function App() {
             S<span>∕</span>
           </span>
           <div>
-            サバイバー<small>LAST SIGNAL</small>
+            サバイバー
           </div>
         </a>
         <div className="sidebar-label">OPERATIONS</div>
@@ -783,7 +783,7 @@ export function App() {
             </>
           )}
           <footer>
-            <span>サバイバー: LAST SIGNAL</span>
+            <span>サバイバー</span>
             <span>NO ACCOUNTS. JUST PRACTICE.</span>
           </footer>
         </main>

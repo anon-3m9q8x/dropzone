@@ -1,4 +1,4 @@
-# サバイバー: LAST SIGNAL
+# サバイバー
 
 （旧名称：DROPZONE。リポジトリ名・公開URL・保存キーは互換性のため `dropzone` のまま）
 
