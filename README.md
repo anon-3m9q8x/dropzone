@@ -1,4 +1,6 @@
-# DROPZONE: LAST SIGNAL
+# サバイバー: LAST SIGNAL
+
+（旧名称：DROPZONE。リポジトリ名・公開URL・保存キーは互換性のため `dropzone` のまま）
 
 ブラウザーで遊ぶオリジナル3Dシューティング。React / TypeScript / Vite / Three.js。
 

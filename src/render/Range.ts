@@ -131,7 +131,7 @@ export class Range {
     this.host.append(this.renderer.domElement);
     this.renderer.domElement.setAttribute(
       "aria-label",
-      "DROPZONE 3D 射撃練習場",
+      "サバイバー 3D 射撃練習場",
     );
     const material = (color: number) =>
       new THREE.MeshStandardMaterial({ color, roughness: 0.85 });

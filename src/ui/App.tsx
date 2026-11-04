@@ -251,7 +251,7 @@ function Training({
       {hud.phase !== "playing" && (
         <div className="overlay">
           <section className="pause-card">
-            <span className="eyebrow">DROPZONE / {modeNames[mode]}</span>
+            <span className="eyebrow">サバイバー / {modeNames[mode]}</span>
             <h1>
               {error
                 ? "起動を確認してください"
@@ -381,10 +381,10 @@ export function App() {
       <aside className="sidebar">
         <a className="brand" href="#home" onClick={() => setPage("home")}>
           <span className="brand-mark">
-            D<span>∕</span>
+            S<span>∕</span>
           </span>
           <div>
-            DROPZONE<small>LAST SIGNAL</small>
+            サバイバー<small>LAST SIGNAL</small>
           </div>
         </a>
         <div className="sidebar-label">OPERATIONS</div>
@@ -783,7 +783,7 @@ export function App() {
             </>
           )}
           <footer>
-            <span>DROPZONE: LAST SIGNAL</span>
+            <span>サバイバー: LAST SIGNAL</span>
             <span>NO ACCOUNTS. JUST PRACTICE.</span>
           </footer>
         </main>
