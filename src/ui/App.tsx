@@ -23,7 +23,6 @@ const controls = [
   ["Ctrl", "しゃがむ"],
   ["Space", "ジャンプ"],
   ["Esc", "一時停止・マウス解放"],
-  ["V", "一人称 → 二人称（正面） → 三人称"],
   ["E / H", "物資を拾う / 回復キットを使う"],
 ];
 const modeNames = {
@@ -47,8 +46,6 @@ function Training({
   const [error, setError] = useState("");
   const [recordNote, setRecordNote] = useState("");
   const [hud, setHud] = useState<Hud>({
-    reticleX: 50,
-    reticleY: 50,
     phase: "ready",
     shots: 0,
     hits: 0,
@@ -67,7 +64,6 @@ function Training({
     alive: mode === "br" ? 8 : 4,
     kills: 0,
     zone: 90,
-    view: 1,
     outcome: null,
     place: null,
     mode,
@@ -131,15 +127,7 @@ function Training({
               : "SOLO BATTLE ROYALE"}
         </span>
         <span>
-          {modeNames[mode]}{" "}
-          <small>
-            {hud.view === 1
-              ? "一人称"
-              : hud.view === 2
-                ? "二人称・正面"
-                : "三人称"}{" "}
-            · V 切替
-          </small>
+          {modeNames[mode]} <small>一人称</small>
         </span>
         <span>
           {String(Math.floor(hud.seconds / 60)).padStart(2, "0")}:
@@ -147,15 +135,9 @@ function Training({
           {settings.showFps && ` · ${hud.fps} FPS`}
         </span>
       </div>
-      {hud.view !== 2 && (
-        <div
-          className={`crosshair ${hud.hit ? "hit" : ""}`}
-          style={{ left: `${hud.reticleX}%`, top: `${hud.reticleY}%` }}
-          aria-hidden="true"
-        >
-          {hud.hit ? "×" : "+"}
-        </div>
-      )}
+      <div className={`crosshair ${hud.hit ? "hit" : ""}`} aria-hidden="true">
+        {hud.hit ? "×" : "+"}
+      </div>
       <div className="range-stats">
         <span>
           SHOTS <b>{hud.shots}</b>
@@ -214,11 +196,6 @@ function Training({
           <small>中心まで {Math.hypot(hud.x, hud.z).toFixed(0)} m · 北 ↑</small>
         </div>
       )}
-      {hud.view === 2 && (
-        <div className="view-note">
-          二人称はプレイヤー正面からの観察視点です。射撃は体の前方へ。Vで照準視点へ戻れます。
-        </div>
-      )}
       {hud.outside && (
         <div className="zone-warning">
           安全地帯の外です！ 青い円の中心へ移動してください
@@ -251,7 +228,7 @@ function Training({
           {mode !== "training" && <small>H 回復キット × {hud.medkits}</small>}
         </div>
         <div className="range-hint">
-          WASD 移動 · 右クリック ADS · R 再装填 · V 視点 · Esc 停止
+          WASD 移動 · 右クリック ADS · R 再装填 · Esc 停止
         </div>
         <div className="ammo">
           <span>{names[hud.weapon]}</span>
@@ -311,17 +288,6 @@ function Training({
                   </span>
                 </>
               )}
-            </div>
-            <div className="view-selector" aria-label="視点選択">
-              {["一人称", "二人称（正面）", "三人称"].map((label, i) => (
-                <button
-                  key={label}
-                  aria-pressed={hud.view === i + 1}
-                  onClick={() => engine.current?.setView(i + 1)}
-                >
-                  {label}
-                </button>
-              ))}
             </div>
             {hud.outcome ? (
               <button className="primary" onClick={onRetry}>
@@ -479,7 +445,7 @@ export function App() {
                     照準、移動、武器の感覚。ここから、あなたのプレイをつくろう。
                   </p>
                 </div>
-                <span className="version-chip">THREE MODES · THREE VIEWS</span>
+                <span className="version-chip">THREE MODES · FIRST PERSON</span>
               </div>
               <section className="hero">
                 <div className="hero-art" aria-hidden="true">

@@ -1086,36 +1086,6 @@ footer {
   gap: 8px;
   font-size: 11px;
 }
-.view-selector {
-  display: flex;
-  gap: 7px;
-  margin: 20px 0;
-}
-.view-selector button {
-  flex: 1;
-  background: #1a2d43;
-  border: 1px solid #405873;
-  color: #c8d7e8;
-  border-radius: 5px;
-  padding: 10px 6px;
-  font-size: 10px;
-}
-.view-selector button[aria-pressed="true"] {
-  border-color: #f69a60;
-  color: #ffb886;
-  background: #f69a6012;
-}
-.view-note {
-  position: absolute;
-  top: 145px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #122338d9;
-  padding: 10px 14px;
-  color: #c7dbf1;
-  font-size: 11px;
-  pointer-events: none;
-}
 .battle-feed {
   position: absolute;
   right: 30px;
