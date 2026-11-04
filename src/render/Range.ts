@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CONFIG } from "../core/config";
+import { CONFIG, WEAPON_IDS } from "../core/config";
 import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 import {
   createTraining,
@@ -12,6 +12,7 @@ import type { Battle, PlayMode } from "../core/battle";
 import { human, disposeObject } from "./human";
 import { trainingColliders } from "../core/collision";
 import { buildWeapon } from "./weapons";
+import { buildEnvironment, SKY } from "./environment";
 import type { WeaponModel } from "./weapons";
 import type { SettingsV1, WeaponId } from "../core/types";
 export interface Hud {
@@ -116,7 +117,7 @@ export class Range {
       antialias: settings.graphicsQuality !== "low",
       powerPreference: "high-performance",
     });
-    this.renderer.setClearColor(0x0b1522);
+    this.renderer.setClearColor(SKY);
     this.renderer.setPixelRatio(
       Math.min(
         devicePixelRatio,
@@ -132,50 +133,14 @@ export class Range {
       "aria-label",
       "DROPZONE 3D 射撃練習場",
     );
-    this.scene.fog = new THREE.Fog(0x0b1522, 25, 80);
-    this.scene.add(new THREE.HemisphereLight(0x9ac8ff, 0x35404a, 2.5));
-    const sun = new THREE.DirectionalLight(0xffffff, 2);
-    sun.position.set(-8, 20, -8);
-    this.scene.add(sun);
     const material = (color: number) =>
       new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
-    for (const box of this.battle?.boxes ?? trainingColliders) {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(
-          box.max.x - box.min.x,
-          box.max.y - box.min.y,
-          box.max.z - box.min.z,
-        ),
-        material(
-          box.id === "ground"
-            ? 0x182533
-            : box.id.includes("cover")
-              ? 0x425369
-              : 0x26384b,
-        ),
-      );
-      mesh.position.set(
-        (box.max.x + box.min.x) / 2,
-        (box.max.y + box.min.y) / 2,
-        (box.max.z + box.min.z) / 2,
-      );
-      this.scene.add(mesh);
-      if (box.id.includes("cover")) {
-        const edges = new THREE.LineSegments(
-          new THREE.EdgesGeometry(mesh.geometry),
-          new THREE.LineBasicMaterial({ color: 0x6d8aa3 }),
-        );
-        mesh.add(edges);
-      }
-    }
-    const grid = new THREE.GridHelper(
-      this.battle ? 192 : 40,
-      this.battle ? 96 : 40,
-      0x426480,
-      0x273d51,
+    buildEnvironment(
+      this.scene,
+      this.battle?.boxes ?? trainingColliders,
+      !!this.battle,
+      settings.graphicsQuality,
     );
-    grid.position.set(0, 0.012, 15);
-    this.scene.add(grid);
     for (const target of this.mode === "training"
       ? this.session.training.targets
       : []) {
@@ -203,7 +168,7 @@ export class Range {
     this.viewScene.add(rim);
     this.viewScene.add(this.viewRoot);
     this.viewRoot.add(this.gun);
-    for (const id of ["ar", "smg", "dmr"] as const) {
+    for (const id of WEAPON_IDS) {
       const model = buildWeapon(id);
       model.group.visible = false;
       this.weapons.set(id, model);
@@ -298,11 +263,8 @@ export class Range {
         if (e.code === "KeyR") this.reload = true;
         if (e.code === "KeyE") this.interact = true;
         if (e.code === "KeyH") this.heal = true;
-        if (["Digit1", "Digit2", "Digit3"].includes(e.code))
-          switchWeapon(
-            this.session,
-            (["ar", "smg", "dmr"] as const)[Number(e.code.slice(-1)) - 1]!,
-          );
+        const slot = /^Digit([1-6])$/.exec(e.code)?.[1];
+        if (slot) switchWeapon(this.session, WEAPON_IDS[Number(slot) - 1]!);
       }
       this.keys.add(e.code);
     }) as EventListener);
@@ -681,9 +643,14 @@ export class Range {
       THREE.MathUtils.lerp(-0.115, -model.sightHeight * scale, this.aim) -
         Math.abs(Math.cos(t)) * 0.005 * sway -
         sprint * 0.03,
-      THREE.MathUtils.lerp(-0.3, id === "dmr" ? -0.085 : -0.08, this.aim) +
-        this.kick * 0.02,
+      THREE.MathUtils.lerp(
+        id === "hg" ? -0.34 : -0.3,
+        id === "dmr" ? -0.085 : id === "hg" ? -0.22 : -0.08,
+        this.aim,
+      ) +
+        this.kick * (id === "sg" ? 0.045 : 0.02),
     );
+    if (model.pump) model.pump.position.z = -0.37 + this.kick * 0.05;
     this.gun.rotation.set(
       this.kick * 0.035 - sprint * 0.25,
       THREE.MathUtils.lerp(0.07, 0, this.aim) + sprint * 0.45,
@@ -778,7 +745,10 @@ export class Range {
           const materials = Array.isArray(obj.material)
             ? obj.material
             : [obj.material];
-          materials.forEach((m) => m.dispose());
+          materials.forEach((m) => {
+          if ("map" in m && m.map instanceof THREE.Texture) m.map.dispose();
+          m.dispose();
+        });
         }
       });
     this.renderer.dispose();

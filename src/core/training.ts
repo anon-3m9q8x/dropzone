@@ -136,7 +136,14 @@ export function createTraining(
     accumulatorSeconds: 0,
     fallenTargets: {},
     targetSequence: 4,
-    practiceWeapons: { ar: w, smg: newWeapon("smg"), dmr: newWeapon("dmr") },
+    practiceWeapons: {
+      ar: w,
+      smg: newWeapon("smg"),
+      dmr: newWeapon("dmr"),
+      lmg: newWeapon("lmg"),
+      sg: newWeapon("sg"),
+      hg: newWeapon("hg"),
+    },
   };
 }
 export function switchWeapon(s: TrainingSession, id: WeaponId) {
@@ -306,56 +313,59 @@ export function stepTraining(
   ) {
     w.magazine--;
     w.fireCooldownSeconds += 1 / def.shotsPerSecond;
-    s.training.shotsFired++;
-    s.combatMetrics.shotsFired++;
-    const spread =
-      ((p.isAiming ? def.adsSpreadDegrees : def.hipSpreadDegrees) * Math.PI) /
-      180;
-    const yaw = p.facing.yaw + (random(s) * 2 - 1) * spread,
-      pitch = p.facing.pitch + (random(s) * 2 - 1) * spread;
-    const direction = {
-      x: -Math.sin(yaw) * Math.cos(pitch),
-      y: Math.sin(pitch),
-      z: -Math.cos(yaw) * Math.cos(pitch),
-    };
     const origin = { ...p.position, y: p.position.y + bodyHeight * 0.94 };
-    const hit = nearestShot(
-      origin,
-      direction,
-      def.rangeMeters,
-      boxes,
-      s.training.targets.filter((t) => s.fallenTargets[t.id] === undefined),
-    );
-    if (hit?.kind === "target") {
-      const t = s.training.targets.find((t) => t.id === hit.id);
-      if (t) {
-        t.hitCount++;
-        if (unlimited) s.fallenTargets[t.id] = s.elapsedSeconds;
+    // Each pellet is its own hitscan ray and shot event (shotgun: 8).
+    for (let pellet = 0; pellet < def.pellets; pellet++) {
+      s.training.shotsFired++;
+      s.combatMetrics.shotsFired++;
+      const spread =
+        ((p.isAiming ? def.adsSpreadDegrees : def.hipSpreadDegrees) * Math.PI) /
+        180;
+      const yaw = p.facing.yaw + (random(s) * 2 - 1) * spread,
+        pitch = p.facing.pitch + (random(s) * 2 - 1) * spread;
+      const direction = {
+        x: -Math.sin(yaw) * Math.cos(pitch),
+        y: Math.sin(pitch),
+        z: -Math.cos(yaw) * Math.cos(pitch),
+      };
+      const hit = nearestShot(
+        origin,
+        direction,
+        def.rangeMeters,
+        boxes,
+        s.training.targets.filter((t) => s.fallenTargets[t.id] === undefined),
+      );
+      if (hit?.kind === "target") {
+        const t = s.training.targets.find((t) => t.id === hit.id);
+        if (t) {
+          t.hitCount++;
+          if (unlimited) s.fallenTargets[t.id] = s.elapsedSeconds;
+        }
+        s.training.shotsHit++;
+        s.combatMetrics.shotsHit++;
+        if (
+          unlimited &&
+          s.training.shotsHit % 5 === 0 &&
+          s.training.targets.length < 12
+        )
+          spawnTarget(s);
       }
-      s.training.shotsHit++;
-      s.combatMetrics.shotsHit++;
-      if (
-        unlimited &&
-        s.training.shotsHit % 5 === 0 &&
-        s.training.targets.length < 12
-      )
-        spawnTarget(s);
-    }
-    events.push({
-      type: "shot",
-      shooterId: "player",
-      weaponId: w.id,
-      hit: {
-        targetId: hit?.id ?? null,
-        hitType: hit?.kind === "target" ? "body" : hit ? "cover" : "none",
-        distanceMeters: hit?.distance ?? null,
-        point: {
-          x: origin.x + direction.x * (hit?.distance ?? def.rangeMeters),
-          y: origin.y + direction.y * (hit?.distance ?? def.rangeMeters),
-          z: origin.z + direction.z * (hit?.distance ?? def.rangeMeters),
+      events.push({
+        type: "shot",
+        shooterId: "player",
+        weaponId: w.id,
+        hit: {
+          targetId: hit?.id ?? null,
+          hitType: hit?.kind === "target" ? "body" : hit ? "cover" : "none",
+          distanceMeters: hit?.distance ?? null,
+          point: {
+            x: origin.x + direction.x * (hit?.distance ?? def.rangeMeters),
+            y: origin.y + direction.y * (hit?.distance ?? def.rangeMeters),
+            z: origin.z + direction.z * (hit?.distance ?? def.rangeMeters),
+          },
         },
-      },
-    });
+      });
+    }
   }
   if (unlimited) {
     for (const t of [...s.training.targets]) {

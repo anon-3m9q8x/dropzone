@@ -54,7 +54,8 @@
       "rangeMeters": 85,
       "hipSpreadDegrees": 2,
       "adsSpreadDegrees": 0.55,
-      "automatic": true
+      "automatic": true,
+      "pellets": 1
     },
     {
       "id": "smg",
@@ -68,7 +69,8 @@
       "rangeMeters": 55,
       "hipSpreadDegrees": 3.5,
       "adsSpreadDegrees": 1.1,
-      "automatic": true
+      "automatic": true,
+      "pellets": 1
     },
     {
       "id": "dmr",
@@ -82,7 +84,53 @@
       "rangeMeters": 130,
       "hipSpreadDegrees": 1.4,
       "adsSpreadDegrees": 0.25,
-      "automatic": false
+      "automatic": false,
+      "pellets": 1
+    },
+    {
+      "id": "lmg",
+      "label": "ライトマシンガン",
+      "damage": 20,
+      "shotsPerSecond": 10,
+      "magazineSize": 100,
+      "defaultReserve": 200,
+      "maxReserve": 400,
+      "reloadSeconds": 4.2,
+      "rangeMeters": 90,
+      "hipSpreadDegrees": 3,
+      "adsSpreadDegrees": 0.9,
+      "automatic": true,
+      "pellets": 1
+    },
+    {
+      "id": "sg",
+      "label": "ショットガン",
+      "damage": 12,
+      "shotsPerSecond": 1.2,
+      "magazineSize": 6,
+      "defaultReserve": 24,
+      "maxReserve": 48,
+      "reloadSeconds": 2.6,
+      "rangeMeters": 30,
+      "hipSpreadDegrees": 5,
+      "adsSpreadDegrees": 3.5,
+      "automatic": false,
+      "pellets": 8
+    },
+    {
+      "id": "hg",
+      "label": "ハンドガン",
+      "damage": 18,
+      "shotsPerSecond": 5,
+      "magazineSize": 15,
+      "defaultReserve": 45,
+      "maxReserve": 90,
+      "reloadSeconds": 1.3,
+      "rangeMeters": 45,
+      "hipSpreadDegrees": 1.6,
+      "adsSpreadDegrees": 0.6,
+      "automatic": false,
+      "pellets": 1
     }
   ],
   "zone": {

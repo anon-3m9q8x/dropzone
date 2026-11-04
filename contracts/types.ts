@@ -6,7 +6,7 @@ export type GameMode = 'training' | 'solo-br';
 export type MatchPhase = 'idle' | 'loading' | 'ready' | 'playing' | 'paused' | 'finished' | 'error';
 export type MatchOutcome = 'victory' | 'defeat' | 'draw' | 'abandoned';
 export type Difficulty = 'easy' | 'normal' | 'hard';
-export type WeaponId = 'ar' | 'smg' | 'dmr';
+export type WeaponId = 'ar' | 'smg' | 'dmr' | 'lmg' | 'sg' | 'hg';
 export type LootKind = 'ammo-ar' | 'ammo-smg' | 'ammo-dmr' | 'medkit' | 'shield' | 'weapon-ar' | 'weapon-smg' | 'weapon-dmr';
 export type BotBehavior = 'patrol' | 'seek-loot' | 'engage' | 'retreat' | 'heal' | 'move-to-zone';
 export type AudioCue = 'shot-ar' | 'shot-smg' | 'shot-dmr' | 'hit' | 'shield-break' | 'reload' | 'pickup' | 'zone' | 'win' | 'lose' | 'ui';
@@ -22,6 +22,8 @@ export interface WeaponDefinition {
   magazineSize: number; defaultReserve: number; maxReserve: number;
   reloadSeconds: number; rangeMeters: number; hipSpreadDegrees: number;
   adsSpreadDegrees: number; automatic: boolean;
+  /** Rays per trigger pull; damage applies per pellet. */
+  pellets: number;
 }
 export interface WeaponState {
   id: WeaponId; magazine: number; reserve: number; reloadRemainingSeconds: number;

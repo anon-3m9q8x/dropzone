@@ -11,6 +11,9 @@ const names = {
   ar: "ASSAULT RIFLE",
   smg: "SUBMACHINE GUN",
   dmr: "MARKSMAN RIFLE",
+  lmg: "LIGHT MACHINE GUN",
+  sg: "SHOTGUN",
+  hg: "HANDGUN",
 };
 const controls = [
   ["W A S D", "移動"],
@@ -18,7 +21,7 @@ const controls = [
   ["左クリック", "射撃"],
   ["右クリック（長押し）", "ADS / 精密照準"],
   ["R", "再装填"],
-  ["1 / 2 / 3", "AR / SMG / DMR"],
+  ["1 〜 6", "AR / SMG / DMR / LMG / SG / HG"],
   ["Shift", "ダッシュ"],
   ["Ctrl", "しゃがむ"],
   ["Space", "ジャンプ"],

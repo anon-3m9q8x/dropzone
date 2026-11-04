@@ -674,6 +674,12 @@ footer {
   pointer-events: none;
   text-shadow: 0 1px 5px #000;
 }
+/* Dark plates keep the HUD readable against the daytime sky. */
+.range-top > span {
+  background: #0d1928bd;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
 .range-top small {
   margin-left: 12px;
   color: #90a9c4;
@@ -774,8 +780,11 @@ footer {
 }
 .range-hint {
   font-size: 10px;
-  color: #a8bed3;
+  color: #c3d4e6;
   text-shadow: 0 1px 4px #000;
+  background: #0d1928a6;
+  border-radius: 4px;
+  padding: 5px 10px;
 }
 .overlay {
   position: absolute;

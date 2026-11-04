@@ -1,6 +1,8 @@
 import raw from "../../data/game-config.json";
 import type { Result, WeaponDefinition, WeaponId } from "./types";
 export type GameConfig = typeof raw;
+/** Number-key order: 1 AR, 2 SMG, 3 DMR, 4 LMG, 5 SG, 6 HG. */
+export const WEAPON_IDS = ["ar", "smg", "dmr", "lmg", "sg", "hg"] as const;
 function shape(value: unknown, example: unknown): boolean {
   if (typeof example === "number")
     return typeof value === "number" && Number.isFinite(value);
@@ -44,10 +46,12 @@ export function validateGameConfig(value: unknown): Result<GameConfig> {
   )
     return fail();
   if (
-    new Set(c.weapons.map((w) => w.id)).size !== 3 ||
+    new Set(c.weapons.map((w) => w.id)).size !== WEAPON_IDS.length ||
     c.weapons.some(
       (w) =>
-        !["ar", "smg", "dmr"].includes(w.id) ||
+        !(WEAPON_IDS as readonly string[]).includes(w.id) ||
+        !Number.isInteger(w.pellets) ||
+        w.pellets < 1 ||
         w.magazineSize < 1 ||
         !Number.isInteger(w.magazineSize) ||
         w.reloadSeconds <= 0 ||

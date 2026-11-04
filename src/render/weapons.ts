@@ -11,6 +11,8 @@ export interface WeaponModel {
   muzzle: THREE.Object3D;
   /** Height of the optic centre above the bore, used to line up ADS. */
   sightHeight: number;
+  /** Shotgun pump, slid back briefly after each shot. */
+  pump?: THREE.Object3D;
 }
 
 interface Palette {
@@ -22,6 +24,8 @@ interface Palette {
   glass: THREE.Material;
   dot: THREE.Material;
   red: THREE.Material;
+  brass: THREE.Material;
+  copper: THREE.Material;
 }
 
 function palette(): Palette {
@@ -57,6 +61,16 @@ function palette(): Palette {
     }),
     dot: new THREE.MeshBasicMaterial({ color: 0xff2b2b }),
     red: new THREE.MeshBasicMaterial({ color: 0xc8302c }),
+    brass: new THREE.MeshStandardMaterial({
+      color: 0xc9a253,
+      metalness: 0.8,
+      roughness: 0.3,
+    }),
+    copper: new THREE.MeshStandardMaterial({
+      color: 0xb8653a,
+      metalness: 0.8,
+      roughness: 0.3,
+    }),
   };
 }
 
@@ -203,9 +217,10 @@ class Builder {
     for (const s of [-1, 1])
       this.box(0.006, 0.042, 0.05, m.metal, s * 0.019, y + 0.033, z + 0.01);
     this.box(0.044, 0.007, 0.052, m.metal, 0, y + 0.057, z + 0.01, 0.12);
-    this.box(0.044, 0.024, 0.032, m.metal, 0, y + 0.024, z - 0.03);
+    // Front body sits below the window so it never blocks the view.
+    this.box(0.044, 0.012, 0.032, m.metal, 0, y + 0.012, z - 0.03);
     for (const s of [-1, 1])
-      this.box(0.006, 0.006, 0.006, m.dark, s * 0.023, y + 0.026, z - 0.03);
+      this.box(0.006, 0.006, 0.006, m.dark, s * 0.023, y + 0.012, z - 0.03);
     const glass = this.box(0.032, 0.034, 0.002, m.glass, 0, y + 0.035, z - 0.01);
     glass.renderOrder = 1;
     const centre = y + 0.035;
@@ -411,6 +426,126 @@ function marksmanRifle(b: Builder): WeaponModel {
   return { group: b.group, muzzle, sightHeight };
 }
 
+function lightMachineGun(b: Builder): WeaponModel {
+  const m = b.m;
+  b.receiver(0.06, -0.24, -0.12);
+  b.pistolGrip(0.02);
+  b.trigger(-0.035);
+  // Feed cover hinge and charging knob.
+  b.box(0.06, 0.012, 0.11, m.metal, 0, 0.03, -0.13);
+  b.cyl(0.008, 0.012, m.steel, 0.034, -0.01, -0.06, 10);
+  // Ammo box hanging under the receiver.
+  b.box(0.08, 0.1, 0.12, m.metal, 0, -0.135, -0.13);
+  b.box(0.084, 0.012, 0.124, m.steel, 0, -0.085, -0.13);
+  for (const s of [-1, 1]) {
+    b.box(0.003, 0.11, 0.008, m.dark, s * 0.041, -0.135, -0.13, 0.75);
+    b.box(0.003, 0.11, 0.008, m.dark, s * 0.041, -0.135, -0.13, -0.75);
+  }
+  b.box(0.022, 0.03, 0.014, m.polymer, 0, -0.095, -0.064);
+  b.box(0.003, 0.05, 0.01, m.gold, 0.042, -0.14, -0.16, -0.55);
+  // Linked belt rising from the box into the feed tray (right side).
+  for (let i = 0; i < 6; i++) {
+    const y = -0.082 + i * 0.012;
+    b.cyl(0.0052, 0.03, m.brass, 0.036, y, -0.13, 8);
+    b.cyl(0.0052, 0.012, m.copper, 0.036, y, -0.151, 8, 0.0015);
+    b.box(0.004, 0.004, 0.03, m.dark, 0.042, y + 0.006, -0.13);
+  }
+  b.handguard(-0.24, -0.58, 0.068, 0.07);
+  b.stripes(0.035, 0.005, -0.34);
+  b.cyl(0.012, 0.13, m.steel, 0, 0, -0.645);
+  const muzzle = b.muzzleBrake(-0.71, 0.016, 0.06);
+  // Weapon light under the handguard.
+  b.cyl(0.012, 0.075, m.polymer, 0.0, -0.072, -0.52, 12);
+  b.cyl(0.0125, 0.004, m.glass, 0.0, -0.072, -0.56, 12);
+  b.carbineStock(0.06);
+  b.flipSight(-0.55, 0.035);
+  b.flipSight(0.045, 0.035, true);
+  const sightHeight = b.holo(-0.09, 0.035);
+  return { group: b.group, muzzle, sightHeight };
+}
+
+function shotgun(b: Builder): WeaponModel {
+  const m = b.m;
+  b.receiver(0.05, -0.2, -0.1);
+  b.pistolGrip(0.015);
+  b.trigger(-0.04);
+  // Slotted barrel shroud over a heavy barrel and tube magazine.
+  b.box(0.06, 0.05, 0.32, m.metal, 0, 0.005, -0.36);
+  for (const s of [-1, 1])
+    for (let i = 0; i < 4; i++)
+      b.box(0.004, 0.012, 0.05, m.dark, s * 0.03, 0.012, -0.25 - i * 0.07);
+  b.rail(0.034, -0.2, -0.52);
+  b.stripes(0.032, 0.0, -0.22);
+  b.cyl(0.015, 0.1, m.steel, 0, 0, -0.57);
+  const muzzle = b.muzzleBrake(-0.62, 0.021, 0.05);
+  b.cyl(0.014, 0.42, m.steel, 0, -0.045, -0.41);
+  b.cyl(0.016, 0.02, m.steel, 0, -0.045, -0.615, 12);
+  // Ribbed pump forend.
+  const pump = new THREE.Group();
+  pump.position.set(0, -0.045, -0.37);
+  b.group.add(pump);
+  const forend = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.045, 0.15), m.polymer);
+  pump.add(forend);
+  for (let i = 0; i < 7; i++)
+    for (const s of [-1, 1]) {
+      const rib = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.032, 0.006), m.dark);
+      rib.position.set(s * 0.026, 0, -0.06 + i * 0.016);
+      pump.add(rib);
+    }
+  b.carbineStock(0.05);
+  b.flipSight(-0.5, 0.038);
+  b.flipSight(0.035, 0.035, true);
+  const sightHeight = b.holo(-0.07, 0.035);
+  return { group: b.group, muzzle, sightHeight, pump };
+}
+
+function handgun(b: Builder): WeaponModel {
+  const m = b.m;
+  // Slide with front/rear serrations and lightening cuts.
+  b.box(0.03, 0.034, 0.2, m.metal, 0, 0.006, -0.08);
+  for (const s of [-1, 1]) {
+    for (let i = 0; i < 4; i++)
+      b.box(0.003, 0.012, 0.014, m.dark, s * 0.0152, 0.012, -0.155 + i * 0.02);
+    for (let i = 0; i < 5; i++)
+      b.box(0.003, 0.022, 0.003, m.dark, s * 0.0152, 0.004, -0.13 + i * 0.008, 0.3);
+    for (let i = 0; i < 5; i++)
+      b.box(0.003, 0.022, 0.003, m.dark, s * 0.0152, 0.004, -0.0 + i * 0.008);
+  }
+  b.stripes(0.0155, 0.004, -0.05, 2, 0.02);
+  b.cyl(0.007, 0.012, m.steel, 0, 0.004, -0.183, 10);
+  // Frame with accessory rail, trigger guard and textured grip.
+  b.box(0.028, 0.022, 0.17, m.polymer, 0, -0.022, -0.07);
+  b.box(0.022, 0.008, 0.05, m.dark, 0, -0.036, -0.13);
+  b.box(0.026, 0.006, 0.045, m.polymer, 0, -0.06, -0.06);
+  b.box(0.006, 0.03, 0.006, m.polymer, 0, -0.046, -0.083);
+  b.box(0.004, 0.02, 0.004, m.steel, 0, -0.044, -0.055, 0.3);
+  b.box(0.03, 0.11, 0.042, m.polymer, 0, -0.08, -0.005, -0.28);
+  for (const s of [-1, 1])
+    b.box(0.003, 0.07, 0.032, m.dark, s * 0.0155, -0.085, -0.002, -0.28);
+  b.box(0.034, 0.014, 0.05, m.polymer, 0, -0.137, 0.012, -0.28);
+  b.box(0.003, 0.035, 0.006, m.gold, 0.0155, -0.1, 0.012, -0.28);
+  b.box(0.004, 0.006, 0.016, m.steel, 0.016, -0.018, -0.03);
+  // Iron sights and a compact red-dot.
+  b.box(0.006, 0.008, 0.006, m.dark, 0, 0.026, -0.172);
+  b.box(0.022, 0.009, 0.008, m.dark, 0, 0.027, 0.01);
+  const y = 0.023;
+  b.box(0.026, 0.006, 0.04, m.polymer, 0, y + 0.003, -0.055);
+  for (const s of [-1, 1])
+    b.box(0.004, 0.028, 0.03, m.metal, s * 0.012, y + 0.02, -0.055);
+  b.box(0.028, 0.005, 0.03, m.metal, 0, y + 0.036, -0.055, 0.15);
+  b.box(0.028, 0.018, 0.012, m.metal, 0, y + 0.012, -0.075);
+  const glass = b.box(0.02, 0.022, 0.002, m.glass, 0, y + 0.021, -0.058);
+  glass.renderOrder = 1;
+  const sightHeight = y + 0.021;
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.001, 6, 4), m.dot);
+  dot.position.set(0, sightHeight, -0.06);
+  b.group.add(dot);
+  const muzzle = new THREE.Object3D();
+  muzzle.position.set(0, 0.004, -0.2);
+  b.group.add(muzzle);
+  return { group: b.group, muzzle, sightHeight };
+}
+
 /** Gloved hands, white sleeves with orange bands and a wrist computer. */
 function addArms(
   group: THREE.Group,
@@ -526,14 +661,26 @@ function addArms(
 export function buildWeapon(id: WeaponId): WeaponModel {
   const b = new Builder(new THREE.Group(), palette());
   b.group.name = id;
-  const model =
-    id === "ar"
-      ? assaultRifle(b)
-      : id === "smg"
-        ? submachineGun(b)
-        : marksmanRifle(b);
-  const grip = id === "dmr" ? 0.02 : id === "smg" ? 0.012 : 0.015;
-  const fore = id === "dmr" ? -0.36 : id === "smg" ? -0.25 : -0.33;
-  addArms(model.group, grip, fore);
+  const build = {
+    ar: assaultRifle,
+    smg: submachineGun,
+    dmr: marksmanRifle,
+    lmg: lightMachineGun,
+    sg: shotgun,
+    hg: handgun,
+  }[id];
+  const model = build(b);
+  // Pistol grip z, support-hand z and height per weapon.
+  const [grip, fore, foreY] = (
+    {
+    ar: [0.015, -0.33, -0.05],
+    smg: [0.012, -0.25, -0.05],
+    dmr: [0.02, -0.36, -0.05],
+    lmg: [0.02, -0.4, -0.05],
+    sg: [0.015, -0.37, -0.07],
+    hg: [-0.005, -0.01, -0.085],
+  } as const
+  )[id];
+  addArms(model.group, grip, fore, foreY);
   return model;
 }
