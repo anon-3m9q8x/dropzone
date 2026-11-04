@@ -1,0 +1,16 @@
+:root {
+  color-scheme: dark;
+  --dz-bg: #080F1D; --dz-nav: #101C2F; --dz-panel: #14223A;
+  --dz-panel-strong: #192B47; --dz-stroke: #2D405D;
+  --dz-text: #EDF4FF; --dz-muted: #A9BDD8;
+  --dz-orange: #F28B35; --dz-blue: #47AAFF;
+  --dz-danger: #F16464; --dz-success: #49CE9C;
+  --dz-radius: 14px; --dz-sidebar-width: 244px;
+  --dz-shadow: 0 10px 30px #02060FB0;
+  --dz-focus: 3px solid var(--dz-blue);
+}
+.dz-panel { background: var(--dz-panel); border: 1px solid var(--dz-stroke); border-radius: var(--dz-radius); }
+.dz-control:focus-visible { outline: var(--dz-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

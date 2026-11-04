@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "productName": "DROPZONE: LAST SIGNAL",
+  "world": {
+    "halfExtentMeters": 96,
+    "groundY": 0,
+    "playerRadiusMeters": 0.35,
+    "standingHeightMeters": 1.75,
+    "crouchHeightMeters": 1.15,
+    "walkMetersPerSecond": 5,
+    "sprintMetersPerSecond": 7,
+    "crouchMetersPerSecond": 2.8,
+    "jumpInitialMetersPerSecond": 5.1,
+    "gravityMetersPerSecondSquared": 9.81,
+    "maxStepDeltaSeconds": 0.05,
+    "fixedDeltaSeconds": 0.016666666666666666,
+    "maxTicksPerFrame": 5
+  },
+  "match": {
+    "botCount": 7,
+    "totalActors": 8,
+    "maxSeconds": 600,
+    "initialHealth": 100,
+    "initialShield": 50,
+    "maxHealth": 100,
+    "maxShield": 50,
+    "initialMedkits": 1,
+    "maxMedkits": 3,
+    "healAmount": 35,
+    "healSeconds": 2,
+    "interactRangeMeters": 2.2,
+    "headshotMultiplier": 1.5,
+    "saveIntervalSeconds": 5,
+    "lootCount": 50
+  },
+  "camera": {
+    "defaultFovDegrees": 75,
+    "adsFovDegrees": 60,
+    "nearMeters": 0.08,
+    "farMeters": 260,
+    "pitchMinDegrees": -85,
+    "pitchMaxDegrees": 85
+  },
+  "weapons": [
+    {
+      "id": "ar",
+      "label": "アサルトライフル",
+      "damage": 22,
+      "shotsPerSecond": 8,
+      "magazineSize": 30,
+      "defaultReserve": 90,
+      "maxReserve": 180,
+      "reloadSeconds": 2.1,
+      "rangeMeters": 85,
+      "hipSpreadDegrees": 2,
+      "adsSpreadDegrees": 0.55,
+      "automatic": true
+    },
+    {
+      "id": "smg",
+      "label": "サブマシンガン",
+      "damage": 14,
+      "shotsPerSecond": 12,
+      "magazineSize": 36,
+      "defaultReserve": 108,
+      "maxReserve": 216,
+      "reloadSeconds": 1.8,
+      "rangeMeters": 55,
+      "hipSpreadDegrees": 3.5,
+      "adsSpreadDegrees": 1.1,
+      "automatic": true
+    },
+    {
+      "id": "dmr",
+      "label": "マークスマンライフル",
+      "damage": 46,
+      "shotsPerSecond": 2.2,
+      "magazineSize": 12,
+      "defaultReserve": 36,
+      "maxReserve": 72,
+      "reloadSeconds": 2.5,
+      "rangeMeters": 130,
+      "hipSpreadDegrees": 1.4,
+      "adsSpreadDegrees": 0.25,
+      "automatic": false
+    }
+  ],
+  "zone": {
+    "center": {
+      "x": 0,
+      "z": 0
+    },
+    "phases": [
+      {
+        "startSecond": 0,
+        "endSecond": 60,
+        "fromRadius": 90,
+        "toRadius": 90,
+        "outsideDamagePerSecond": 4
+      },
+      {
+        "startSecond": 60,
+        "endSecond": 180,
+        "fromRadius": 90,
+        "toRadius": 65,
+        "outsideDamagePerSecond": 4
+      },
+      {
+        "startSecond": 180,
+        "endSecond": 210,
+        "fromRadius": 65,
+        "toRadius": 65,
+        "outsideDamagePerSecond": 6
+      },
+      {
+        "startSecond": 210,
+        "endSecond": 330,
+        "fromRadius": 65,
+        "toRadius": 40,
+        "outsideDamagePerSecond": 6
+      },
+      {
+        "startSecond": 330,
+        "endSecond": 360,
+        "fromRadius": 40,
+        "toRadius": 40,
+        "outsideDamagePerSecond": 8
+      },
+      {
+        "startSecond": 360,
+        "endSecond": 450,
+        "fromRadius": 40,
+        "toRadius": 20,
+        "outsideDamagePerSecond": 8
+      },
+      {
+        "startSecond": 450,
+        "endSecond": 480,
+        "fromRadius": 20,
+        "toRadius": 20,
+        "outsideDamagePerSecond": 12
+      },
+      {
+        "startSecond": 480,
+        "endSecond": 540,
+        "fromRadius": 20,
+        "toRadius": 5,
+        "outsideDamagePerSecond": 12
+      },
+      {
+        "startSecond": 540,
+        "endSecond": 600,
+        "fromRadius": 5,
+        "toRadius": 5,
+        "outsideDamagePerSecond": 15
+      }
+    ]
+  },
+  "bots": {
+    "visionMeters": 42,
+    "visionAngleDegrees": 120,
+    "hearingMeters": 30,
+    "lastSeenMemorySeconds": 3,
+    "lastHeardMemorySeconds": 2,
+    "decisionIntervalSeconds": 0.2,
+    "reactionMilliseconds": {
+      "easy": 600,
+      "normal": 350,
+      "hard": 180
+    },
+    "aimSpreadDegrees": {
+      "easy": 6,
+      "normal": 4,
+      "hard": 2.5
+    },
+    "healingThresholdHealth": 40
+  },
+  "pickups": {
+    "ammo-ar": 30,
+    "ammo-smg": 36,
+    "ammo-dmr": 12,
+    "medkit": 1,
+    "shield": 25,
+    "weapon-ar": 1,
+    "weapon-smg": 1,
+    "weapon-dmr": 1
+  },
+  "defaultSettings": {
+    "schemaVersion": 1,
+    "sensitivity": 1.0,
+    "masterVolume": 0.7,
+    "sfxEnabled": true,
+    "reducedMotion": false,
+    "showFps": false,
+    "uiScale": 1.0,
+    "graphicsQuality": "medium",
+    "colorAssistMode": false
+  }
+}
