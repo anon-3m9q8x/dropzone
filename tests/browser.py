@@ -10,7 +10,7 @@ with sync_playwright() as p:
  assert page.locator('.primary').is_enabled()
  page.get_by_role('button',name='⚙ 設定').click();page.locator('input[type=range]').first.fill('1.5');page.locator('.toggle').nth(1).check();page.reload();page.get_by_role('button',name='⚙ 設定').click();assert page.locator('input[type=range]').first.input_value()=='1.5'
  page.get_by_role('button',name='⌂ ホーム').click();page.locator('.hero .primary').click();page.get_by_role('button',name=re.compile('^練習を開始')).click();page.wait_for_function('document.pointerLockElement!==null');page.wait_for_function("!document.querySelector('.overlay')")
- page.mouse.down(button='right');page.mouse.down();page.wait_for_timeout(1200);page.mouse.up();page.mouse.up(button='right');page.wait_for_timeout(150)
+ page.mouse.down(button='right');page.mouse.down();page.wait_for_function("Number(document.querySelector('.range-stats b').textContent)>=5");page.mouse.up();page.mouse.up(button='right');page.wait_for_timeout(150)
  shots=int(page.locator('.range-stats b').nth(0).inner_text());hits=int(page.locator('.range-stats b').nth(1).inner_text());assert shots>=5,(shots,hits);assert hits>0,(shots,hits)
  page.screenshot(path=str(ROOT/'docs/screenshots/training.png'))
  page.keyboard.press('Escape');page.wait_for_selector('.overlay');before=page.locator('.range-top').inner_text();page.wait_for_timeout(1200);after=page.locator('.range-top').inner_text();assert re.search(r'\d\d:\d\d',before).group()==re.search(r'\d\d:\d\d',after).group();assert int(page.locator('.range-stats b').nth(0).inner_text())==shots
@@ -21,7 +21,7 @@ with sync_playwright() as p:
   page.set_viewport_size({'width':width,'height':1000});page.wait_for_timeout(200);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
   if width<900:assert page.locator('.hero .primary').is_disabled()
   if width==390:page.screenshot(path=str(ROOT/'docs/screenshots/home-mobile.png'),full_page=True)
- page.set_viewport_size({'width':1440,'height':1080});page.get_by_role('button',name='? 操作ガイド').click();assert page.locator('.help-row').count()==10
+ page.set_viewport_size({'width':1440,'height':1080});page.get_by_role('button',name='? 操作ガイド').click();assert page.locator('.help-row').count()==12
  data=page.evaluate("JSON.parse(localStorage.getItem('dropzone-save-v1'))");assert data['stats']['matches']==0 and data['results']==[] and data['currentMatch'] is None
  # Corrupt/forward-version data must survive settings edits.
  page.evaluate("localStorage.setItem('dropzone-save-v1','{\"schemaVersion\":999}')");page.reload();page.get_by_role('button',name='⚙ 設定').click();page.locator('input[type=range]').first.fill('2');assert page.evaluate("localStorage.getItem('dropzone-save-v1')")=='{"schemaVersion":999}'

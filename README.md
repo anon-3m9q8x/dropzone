@@ -1,85 +1,87 @@
-# DROPZONE: LAST SIGNAL — Step 1
+# DROPZONE: LAST SIGNAL
 
-添付仕様をもとに作成した、ブラウザーで遊べる3D FPSの射撃練習版です。
-React / TypeScript / Vite / Three.js。アカウント・APIキー・外部アセット不要。
+ブラウザーで遊ぶオリジナル3Dシューティング。React / TypeScript / Vite / Three.js。
 
-## 起動
+**公開サイト： https://anon-3m9q8x.github.io/dropzone/**
 
-Node.js 22.12以上（Node 24で検証）を使用します。
+## モード
+
+- **射撃練習**：命中すると的が倒れ、約1秒後に新しい的が出現。5命中ごとに同時出現数が増え、最大12体。予備弾薬は無制限、再装填は必要。練習は戦績に含めない。
+- **CPU戦**：プレイヤー対CPU3体。全CPU撃破で勝利。制限時間5分。
+- **バトルロイヤル**：プレイヤー＋CPU7体の個人戦。192×192mのアリーナ、安全地帯の段階的縮小・圏外ダメージ、物資・回復、最後の1人の勝利。制限時間10分。
+
+CPUは視線が遮られた相手を撃たず、相手へ接近し、BRではCPU同士も交戦。弾切れで再装填、必要時に弾薬を探し、近くの物資の取得と回復を行う。開始直後には射撃の猶予がある。
+
+## 視点と表現
+
+- **一人称**：武器と手を表示。
+- **二人称（正面）**：プレイヤーを正面から見る観察カメラ。射撃はキャラクターの前方に向かう。通常の照準で狙う場合は一人称か三人称を使用。
+- **三人称**：プレイヤー後方から追従。カメラは壁や遮蔽物を避ける。
+- プレイヤー・CPUは頭、胴、両腕、両脚を持つオリジナルのローポリ人型。移動時の脚、しゃがみ、倒れたCPUを表示。
+- 弾の先端とトレーサーが銃口から着弾位置へ移動。**命中計算はヒットスキャンで、弾道は視覚エフェクト**。飛行中の追加ダメージは発生しない。
+
+## 操作
+
+PC・マウス・キーボード・WebGL・Pointer Lock対応ブラウザーが必要。
+幅900px未満またはタッチ主体の端末では、メニュー・設定・ガイドのみ利用可能。
+
+| 操作                           | キー                          |
+| ------------------------------ | ----------------------------- |
+| 移動 / 視点                    | WASD / マウス                 |
+| 射撃 / ADS                     | 左クリック / 右クリック長押し |
+| 再装填 / 武器選択              | R / 1・2・3（AR・SMG・DMR）   |
+| ダッシュ / しゃがむ / ジャンプ | Shift / Ctrl / Space          |
+| 視点切替                       | V（一人称→二人称→三人称）     |
+| 物資を拾う / 回復キット        | E / H                         |
+| 停止・マウス解放               | Esc                           |
+
+DMRは単発。ダッシュ中は射撃・再装填不可。回復は2秒間、射撃・ダッシュ・被ダメージで中断。
+タブ非表示・フォーカス解除・マウス解放で自動停止し、再開ボタンを押すまで進行しない。
+
+## 保存
+
+- 設定：`dropzone-save-v1`。元の全体仕様形式を維持。未対応・破損データは上書きしない。
+- CPU戦・BRの終了結果：`dropzone-battle-records-v1`。直近50試合、同一試合の重複登録を防止。
+- 試合途中の保存・再開、オンライン対戦、アカウント・クラウド同期は未対応。
+
+## 開発
+
+Node.js 22.12以上（Node 24で検証）。外部画像・フォント・3Dモデル・APIキー不要。
 
 ```sh
-cd /workspace/dropzone
 npm ci
 npm run dev
-```
-
-表示されたローカルURLを、PCのChrome / Edge等で開いてください。PC・マウス・キーボード・WebGL・Pointer Lockが必要です。幅900px未満またはタッチ主体の端末では、メニュー・設定・ガイドのみ利用できます。
-
-```sh
-npm run typecheck
 npm test
 npm run build
 npm run preview
 ```
 
-`dist/` が静的な完成物です。相対パスのため、GitHub Pagesのリポジトリ配下に配置できます。Step 2でローカルGitリポジトリ（main）を初期化し、初回コミットを作成しました。コードはGitHubの `main` へPush済みです。公開設定は以下を参照してください。
-
-## 構成
-
 ```text
-index.html                 HTMLエントリー
-src/
-  main.tsx                 React起動
-  style.css                レスポンシブなDark Tactical UI
-  ui/App.tsx               ホーム・設定・ヘルプ・練習HUD
-  render/Range.ts          Three.js・入力・固定tick・音・破棄処理
-  core/
-    config.ts              定数の検証
-    types.ts               型の公開・練習状態
-    training.ts            移動・射撃・再装填・ターゲット
-    collision.ts           プレイヤー衝突・射線判定
-    storage.ts             設定保存・既存データ保護
-contracts/types.ts         添付の全体仕様の型（未実装分も含む）
-data/game-config.json      添付の定数（未実装分も含む）
-design/tokens.css          添付の配色トークン
-docs/                      添付仕様・今回の検証記録・画面画像
-tests/core.test.ts         ゲーム処理・保存の単体テスト
-tests/browser.py           実ブラウザー検証
+src/ui/App.tsx         ホーム・モード選択・HUD・結果・設定・ガイド
+src/render/Range.ts   Three.js・入力・カメラ・固定tick・弾道
+src/render/human.ts   人型モデルと破棄処理
+src/core/training.ts  移動・射撃・再装填・倒れる的・再出現
+src/core/battle.ts    CPU・アリーナ・戦闘・安全地帯・物資・回復・勝敗
+src/core/records.ts   対戦結果の保存
+src/core/storage.ts   設定保存と既存データ保護
+src/core/collision.ts プレイヤーと遮蔽物・射線判定
+contracts/ data/      添付仕様の型と定数（未対応の項目も含む）
+tests/               単体テスト・実ブラウザー検証
 ```
 
-## この版で遊べること
+## 公開
 
-- 40×50mの3D練習場。静止ターゲット3体・往復移動ターゲット1体。
-- WASD移動、マウス照準、ジャンプ、しゃがみ、ダッシュ、ADS。
-- 左クリック射撃、R再装填、1/2/3でAR・SMG・DMR切り替え。DMRはクリックごとのセミオート。
-- 武器ごとの連射間隔・マガジン・再装填時間・射程・照準拡散。遮蔽物が射線を遮断。
-- 予備弾薬は「練習用無制限」。マガジンは有限。切り替えても残弾数を維持。
-- 発射数・命中数・命中率・残弾・経過時間を表示。練習は戦績へ保存しない。
-- Esc / マウス解放 / タブ非表示 / フォーカス解除で停止。再開ボタン＋マウスロック成功後に再開。
-- 感度・音量・効果音・描画解像度・UI倍率・FPS・発光抑制・高コントラスト設定。
-- 設定を `dropzone-save-v1` に保存。破損・将来形式・既存試合データは上書きしない。
-- 発射・命中時の簡易合成音。WebGL非対応時の案内。モバイル用メニュー表示。
+GitHub Settings → Pages → Sourceを **GitHub Actions** に設定。
+`.github/workflows/pages.yml` がmainへのPushでテスト・ビルド・`dist/`の公開を実行する。
+アセットは相対パスで、GitHub Pagesのサブパスに対応。
 
-## 次段階の範囲（未実装）
+ブラウザー検証はPython PlaywrightとChromiumのある開発環境で実行する。通常プレイにPythonは不要。
 
-CPU7体とのバトルロイヤル、安全地帯縮小、物資・回復・被ダメージ・勝敗、試合スナップショット保存・再開、戦績集計、完全な武器反動・被弾演出・全効果音。これらは画面や型・定数が存在しても動作実装済みではありません。練習中のHP/シールドは固定です。
+```sh
+npm run dev -- --port 3500
+python3 tests/browser.py
+python3 tests/combat_browser.py
+```
 
-`docs/ACCEPTANCE_MATRIX.md` は添付の全体受け入れ基準です。全体仕様の合格を意味しません。今回確認した範囲は `docs/STEP1_VERIFICATION.md` を参照してください。
-
-## 補足
-
-静的サイトです。認証・パスワード保護はありません。外部公開・GitHub設定はStep 3/4で対応します。公開前のURLは発行していません。
-
-描画品質は解像度を変更します。アンチエイリアスは練習場を起動した時の品質で決まります。効果音はブラウザーの音声機能が使用可能な場合に再生します。自動ブラウザーテストでは音の聞こえ方までは確認していません。
-
-ブラウザーテストはPython PlaywrightとChromiumがある開発環境で、`npm run dev -- --port 3500` 起動後、`python3 tests/browser.py` を実行します。`DROPZONE_BASE_URL` で本番ビルドのプレビュー先も指定できます。通常利用にPythonは不要です。
-
-## GitHub Pagesへの公開（Step 4）
-
-GitHubのSettings → Pages → Build and deployment → Sourceで **GitHub Actions** を選択します。
-`.github/workflows/pages.yml` がmainへのPush時にテスト・ビルド・distの公開を実行します。
-設定後にActions → Deploy GitHub Pages → Run workflowを実行してください。
-
-公開予定URL： https://anon-3m9q8x.github.io/dropzone/
-
-このURLはデプロイ成功後に利用できます。Actionsの成功、HTML/JS/CSSの読み込み、PCでの練習開始と射撃、Esc停止、設定保存、モバイルでの案内表示を確認してください。
+`DROPZONE_BASE_URL` でプレビュー先・公開先を指定できる。
+添付の全体仕様の受け入れ基準は原文を保持。今回の実装だけで全体仕様の完了・全項目合格を意味しない。
