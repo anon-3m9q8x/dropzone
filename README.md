@@ -22,7 +22,7 @@ npm run build
 npm run preview
 ```
 
-`dist/` が静的な完成物です。相対パスのため、GitHub Pagesのリポジトリ配下に配置できます。Step 2でローカルGitリポジトリ（main）を初期化し、初回コミットを作成しました。Push・公開はまだ行っていません。
+`dist/` が静的な完成物です。相対パスのため、GitHub Pagesのリポジトリ配下に配置できます。Step 2でローカルGitリポジトリ（main）を初期化し、初回コミットを作成しました。コードはGitHubの `main` へPush済みです。公開設定は以下を参照してください。
 
 ## 構成
 
@@ -73,3 +73,13 @@ CPU7体とのバトルロイヤル、安全地帯縮小、物資・回復・被�
 描画品質は解像度を変更します。アンチエイリアスは練習場を起動した時の品質で決まります。効果音はブラウザーの音声機能が使用可能な場合に再生します。自動ブラウザーテストでは音の聞こえ方までは確認していません。
 
 ブラウザーテストはPython PlaywrightとChromiumがある開発環境で、`npm run dev -- --port 3500` 起動後、`python3 tests/browser.py` を実行します。`DROPZONE_BASE_URL` で本番ビルドのプレビュー先も指定できます。通常利用にPythonは不要です。
+
+## GitHub Pagesへの公開（Step 4）
+
+GitHubのSettings → Pages → Build and deployment → Sourceで **GitHub Actions** を選択します。
+`.github/workflows/pages.yml` がmainへのPush時にテスト・ビルド・distの公開を実行します。
+設定後にActions → Deploy GitHub Pages → Run workflowを実行してください。
+
+公開予定URL： https://anon-3m9q8x.github.io/dropzone/
+
+このURLはデプロイ成功後に利用できます。Actionsの成功、HTML/JS/CSSの読み込み、PCでの練習開始と射撃、Esc停止、設定保存、モバイルでの案内表示を確認してください。
