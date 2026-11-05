@@ -9,6 +9,8 @@ import { configResult } from "../core/config";
 import type { SettingsV1 } from "../core/types";
 import { BriefingScreen, LoadingScreen, LobbyScreen } from "./Standby";
 import "./theme.css";
+import { Home } from "./Home";
+import { WEAPON_IDS, weaponDefinition } from "../core/config";
 const names = {
   ar: "ASSAULT RIFLE",
   smg: "SUBMACHINE GUN",
@@ -450,6 +452,22 @@ export function App() {
         onRetry={() => setRound((n) => n + 1)}
       />
     );
+  if (page === "home")
+    return (
+      <Home
+        canPlay={desktop && configResult.ok}
+        playNote={
+          !configResult.ok
+            ? "ゲーム定数に不整合があります。"
+            : "プレイには PC とマウス、幅900px以上の画面が必要です。"
+        }
+        onPlay={(m) => {
+          setMode(m);
+          setPlaying(true);
+        }}
+        onNavigate={setPage}
+      />
+    );
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -464,6 +482,7 @@ export function App() {
           {[
             ["home", "⌂", "ホーム"],
             ["training", "⌖", "射撃練習場"],
+            ["loadout", "▱", "ロードアウト"],
             ["stats", "▥", "戦績"],
             ["settings", "⚙", "設定"],
             ["help", "?", "操作ガイド"],
@@ -506,7 +525,7 @@ export function App() {
           </div>
         </header>
         <main className="content">
-          {(page === "home" || page === "training") && (
+          {page === "training" && (
             <>
               <div className="page-heading">
                 <div>
@@ -738,6 +757,56 @@ export function App() {
                   </div>
                 </section>
               </div>
+            </>
+          )}
+          {page === "loadout" && (
+            <>
+              <div className="page-heading">
+                <div>
+                  <span className="eyebrow">LOADOUT</span>
+                  <h1>ロードアウト</h1>
+                  <p>
+                    CPU戦・バトルロイヤルでは 1〜6
+                    キーで全武器を切り替え。射撃練習場では武器台から2つまで持てます。
+                  </p>
+                </div>
+                <span className="version-chip">{WEAPON_IDS.length} WEAPONS</span>
+              </div>
+              <section className="panel">
+                {WEAPON_IDS.map((id, i) => {
+                  const d = weaponDefinition(id);
+                  return (
+                    <div className="weapon-row" key={id}>
+                      <span className="weapon-key">KEY {i + 1}</span>
+                      <div className="weapon-title">
+                        <strong>
+                          {names[id]} <small>{weaponJa[id]}</small>
+                        </strong>
+                      </div>
+                      <div className="weapon-spec">
+                        <b>{d.magazineSize}</b>
+                        <small>MAGAZINE</small>
+                      </div>
+                      <div className="weapon-spec">
+                        <b>{d.shotsPerSecond}</b>
+                        <small>SHOTS / SEC</small>
+                      </div>
+                      <div className="weapon-spec">
+                        <b>{d.damage}</b>
+                        <small>DAMAGE</small>
+                      </div>
+                      <div className="weapon-spec">
+                        <b>{d.rangeMeters}m</b>
+                        <small>RANGE</small>
+                      </div>
+                      <div className="weapon-spec">
+                        <b>{d.reloadSeconds}s</b>
+                        <small>RELOAD</small>
+                      </div>
+                    </div>
+                  );
+                })}
+              </section>
             </>
           )}
           {page === "settings" && (
