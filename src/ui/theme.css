@@ -1,0 +1,403 @@
+/* ホーム・設定・戦績・操作ガイド — ライト・荒野テーマ（待機画面と共通の配色） */
+html:root {
+  color-scheme: light;
+  background: #e8dcc4;
+  color: #2a231b;
+}
+.app-shell {
+  --w-sand: #e8dcc4;
+  --w-paper: #f3ecdd;
+  --w-paper2: #efe5d1;
+  --w-dust: #e1d3b7;
+  --w-line: #c9b89a;
+  --w-ink: #2a231b;
+  --w-ink2: #4a3f33;
+  --w-muted: #6e604d;
+  --w-accent: #b4471c;
+  --w-olive: #4d5a2a;
+  --w-display: "Dela Gothic One", "Noto Sans JP", system-ui, sans-serif;
+  --w-type: "Special Elite", "Courier New", "Noto Sans JP", monospace;
+  --w-num: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  background: var(--w-sand);
+  color: var(--w-ink);
+}
+.app-shell p {
+  color: var(--w-ink2);
+}
+.app-shell h1,
+.app-shell h2,
+.app-shell .hero h2 {
+  font-family: var(--w-display);
+  font-weight: 400;
+  letter-spacing: 2px;
+}
+.app-shell button:focus-visible,
+.app-shell a:focus-visible,
+.app-shell input:focus-visible,
+.app-shell select:focus-visible {
+  outline: 3px solid var(--w-accent);
+  outline-offset: 3px;
+}
+.app-shell button:hover:not(:disabled) {
+  filter: none;
+}
+
+/* サイドバー */
+.app-shell .sidebar {
+  background: var(--w-dust);
+  border-right: 2px solid var(--w-ink);
+}
+.app-shell .brand {
+  font-family: var(--w-display);
+  font-weight: 400;
+  letter-spacing: 2px;
+}
+.app-shell .brand-mark {
+  background: var(--w-accent);
+  color: var(--w-paper);
+  font-family: var(--w-num);
+  font-weight: 800;
+  transform: skew(-8deg) rotate(-2deg);
+}
+.app-shell .brand-mark span {
+  color: var(--w-paper);
+}
+.app-shell .sidebar-label {
+  font-family: var(--w-type);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--w-accent);
+}
+.app-shell nav button {
+  color: var(--w-ink2);
+  border-radius: 0;
+  border: 1px solid transparent;
+}
+.app-shell nav button:hover {
+  background: var(--w-paper2);
+  border-color: var(--w-line);
+}
+.app-shell nav button.active {
+  color: var(--w-ink);
+  background: var(--w-paper);
+  border: 1px solid var(--w-ink);
+  box-shadow: 3px 3px 0 var(--w-accent);
+}
+.app-shell nav button.active i {
+  color: var(--w-accent);
+}
+.app-shell .sidebar-note {
+  font-family: var(--w-type);
+  color: var(--w-muted);
+}
+.app-shell .sidebar-note p {
+  font-family: "Noto Sans JP", sans-serif;
+  color: var(--w-ink);
+}
+.app-shell .sidebar-note small {
+  color: var(--w-muted);
+}
+.app-shell .status-dot,
+.app-shell .local-badge i {
+  background: var(--w-olive);
+}
+.app-shell .build-label {
+  border-top: 1px dashed #8a7658;
+  font-family: var(--w-type);
+  color: var(--w-muted);
+}
+.app-shell .build-label b {
+  color: var(--w-ink);
+}
+
+/* ヘッダー */
+.app-shell header {
+  background: var(--w-paper2);
+  border-bottom: 2px solid var(--w-ink);
+}
+.app-shell .breadcrumb {
+  font-family: var(--w-type);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--w-muted);
+}
+.app-shell .breadcrumb span {
+  color: var(--w-accent);
+}
+.app-shell .local-badge {
+  font-family: var(--w-type);
+  font-size: 11px;
+  color: var(--w-muted);
+}
+.app-shell .avatar {
+  background: var(--w-paper);
+  border: 2px solid var(--w-ink);
+  border-radius: 0;
+  color: var(--w-ink);
+  font-family: var(--w-num);
+  font-size: 15px;
+  box-shadow: 2px 2px 0 var(--w-ink);
+}
+
+/* 共通部品 */
+.app-shell .eyebrow {
+  font-family: var(--w-type);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: var(--w-accent);
+}
+.app-shell .version-chip,
+.app-shell .outline-tag {
+  font-family: var(--w-type);
+  font-size: 11px;
+  color: var(--w-ink2);
+  border: 1px dashed #8a7658;
+  border-radius: 0;
+  background: var(--w-paper2);
+}
+.app-shell .tag {
+  font-family: var(--w-type);
+  font-size: 12px;
+  color: var(--w-paper);
+  background: var(--w-accent);
+  border: 0;
+  border-radius: 0;
+}
+.app-shell .primary,
+.app-shell .secondary {
+  border-radius: 0;
+  font-size: 13px;
+}
+.app-shell .primary {
+  font-family: var(--w-display);
+  font-weight: 400;
+  letter-spacing: 2px;
+  background: var(--w-accent);
+  color: var(--w-paper);
+  border: 2px solid var(--w-ink);
+  box-shadow: 4px 4px 0 var(--w-ink);
+}
+.app-shell .primary:hover:not(:disabled) {
+  background: #9c3b15;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--w-ink);
+}
+.app-shell .primary:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--w-ink);
+}
+.app-shell .secondary {
+  background: transparent;
+  color: var(--w-ink);
+  border: 2px solid var(--w-ink);
+}
+.app-shell .secondary:hover:not(:disabled) {
+  background: var(--w-paper);
+}
+.app-shell .panel {
+  background: var(--w-paper);
+  border: 2px solid var(--w-ink);
+  border-radius: 0;
+  box-shadow: 5px 5px 0 #2a231b22;
+}
+
+/* ヒーロー（荒野の風景） */
+.app-shell .hero {
+  background: #e6cfa6;
+  border: 2px solid var(--w-ink);
+  border-radius: 0;
+  box-shadow: 6px 6px 0 var(--w-ink);
+}
+.app-shell .hero-art {
+  background: none;
+}
+.app-shell .hero-art svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.app-shell .hero-copy {
+  background: linear-gradient(90deg, #f3ecddf0 45%, #f3ecdd00);
+}
+.app-shell .hero h2 {
+  letter-spacing: 3px;
+  line-height: 1.05;
+  color: var(--w-ink);
+}
+.app-shell .hero h2 em {
+  color: var(--w-accent);
+}
+.app-shell .hero p {
+  color: var(--w-ink2);
+  font-size: 13px;
+}
+.app-shell .hero-copy > small {
+  color: var(--w-muted);
+  font-size: 11px;
+}
+.app-shell .coordinates {
+  font-family: var(--w-type);
+  font-size: 11px;
+  color: var(--w-ink2);
+  background: #f3ecddcc;
+  border: 1px solid var(--w-ink);
+  padding: 6px 10px;
+}
+.app-shell .hero-number {
+  font-family: var(--w-num);
+  font-weight: 800;
+  color: #2a231b14;
+  letter-spacing: 0;
+}
+.app-shell .hero .sun {
+  animation: w-haze 8s ease-in-out infinite alternate;
+}
+@keyframes w-haze {
+  to {
+    opacity: 0.6;
+  }
+}
+
+/* モード・特徴カード */
+.app-shell .mode-card {
+  background: var(--w-paper);
+  border: 2px solid var(--w-ink);
+  border-radius: 0;
+}
+.app-shell .mode-card:nth-child(3) {
+  background: var(--w-paper2);
+  box-shadow: 4px 4px 0 var(--w-accent);
+}
+.app-shell .metric-card {
+  background: var(--w-paper2);
+  border: 1px dashed #8a7658;
+  border-radius: 0;
+}
+.app-shell .metric-icon {
+  background: var(--w-accent);
+  color: var(--w-paper);
+  border: 0;
+  border-radius: 0;
+}
+.app-shell .metric-card div > span,
+.app-shell .section-heading > span {
+  font-family: var(--w-type);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--w-muted);
+}
+.app-shell .metric-card h3 {
+  font-family: var(--w-num);
+  font-size: 32px;
+  color: var(--w-ink);
+}
+.app-shell .metric-card h3 small {
+  color: var(--w-ink2);
+}
+.app-shell .section-heading h2 {
+  font-size: 17px;
+}
+.app-shell .weapon-row {
+  border-bottom: 1px dashed #8a7658;
+}
+.app-shell .weapon-key {
+  font-family: var(--w-type);
+  color: var(--w-accent);
+}
+.app-shell .weapon-symbol {
+  background: var(--w-dust);
+  border: 1px solid var(--w-ink);
+  border-radius: 0;
+  color: var(--w-ink);
+}
+.app-shell .weapon-title strong {
+  font-family: var(--w-num);
+  font-size: 17px;
+}
+.app-shell .weapon-title strong small {
+  color: var(--w-muted);
+}
+.app-shell .weapon-spec b {
+  font-family: var(--w-num);
+  font-size: 22px;
+  font-weight: 700;
+}
+.app-shell .weapon-spec small {
+  font-family: var(--w-type);
+  font-size: 8px;
+  color: var(--w-muted);
+}
+.app-shell .next-panel {
+  background: var(--w-paper2);
+}
+.app-shell .next-bottom {
+  border-top: 1px dashed #8a7658;
+  font-family: var(--w-type);
+  font-size: 10px;
+  color: var(--w-muted);
+}
+
+/* 設定・ガイド・戦績 */
+.app-shell .setting-row,
+.app-shell .help-row,
+.app-shell .record-row {
+  border-bottom: 1px dashed #8a7658;
+}
+.app-shell .setting-row span small,
+.app-shell .record-row small {
+  color: var(--w-muted);
+}
+.app-shell .setting-row input[type="range"],
+.app-shell .toggle {
+  accent-color: var(--w-accent);
+}
+.app-shell .setting-row select {
+  background: var(--w-paper2);
+  border: 2px solid var(--w-ink);
+  border-radius: 0;
+  color: var(--w-ink);
+}
+.app-shell .help-row kbd {
+  font-family: var(--w-type);
+  background: var(--w-sand);
+  border: 1.5px solid var(--w-ink);
+  border-radius: 0;
+  color: var(--w-ink);
+}
+.app-shell .help-row span {
+  color: var(--w-ink2);
+}
+.app-shell .empty-state > span {
+  color: var(--w-accent);
+}
+
+/* フッター */
+.app-shell .content > footer {
+  font-family: var(--w-type);
+  font-size: 11px;
+  color: var(--w-muted);
+  border-top: 1px dashed #8a7658;
+  margin-top: 28px;
+}
+
+@media (max-width: 760px) {
+  .app-shell .hero h2 {
+    font-size: 40px;
+    letter-spacing: 1px;
+  }
+  .app-shell .coordinates,
+  .app-shell .hero-number {
+    display: none;
+  }
+  .app-shell .sidebar {
+    border-right: 0;
+    border-bottom: 2px solid var(--w-ink);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .hero .sun {
+    animation: none;
+  }
+}

@@ -8,6 +8,7 @@ import { readSave, writeSettings, emptySave } from "../core/storage";
 import { configResult } from "../core/config";
 import type { SettingsV1 } from "../core/types";
 import { BriefingScreen, LoadingScreen, LobbyScreen } from "./Standby";
+import "./theme.css";
 const names = {
   ar: "ASSAULT RIFLE",
   smg: "SUBMACHINE GUN",
@@ -509,45 +510,75 @@ export function App() {
             <>
               <div className="page-heading">
                 <div>
-                  <span className="eyebrow">WELCOME TO THE RANGE</span>
+                  <span className="eyebrow">WELCOME TO THE WASTELAND</span>
                   <h1>
                     {page === "training"
                       ? "射撃練習場"
-                      : "一発の精度が、次を変える。"}
+                      : "荒野で、最後まで立っていろ。"}
                   </h1>
                   <p>
-                    照準、移動、武器の感覚。ここから、あなたのプレイをつくろう。
+                    文明が崩れた荒野で、照準と立ち回りを磨く。生き残るのは、最後の1人。
                   </p>
                 </div>
                 <span className="version-chip">THREE MODES · FIRST PERSON</span>
               </div>
               <section className="hero">
                 <div className="hero-art" aria-hidden="true">
-                  <div className="art-grid" />
-                  <div className="tower t1" />
-                  <div className="tower t2" />
-                  <div className="tower t3" />
-                  <div className="target-art">
-                    <i />
-                    <i />
-                    <b>+</b>
-                  </div>
+                  <svg viewBox="0 0 1200 400" preserveAspectRatio="xMaxYMax slice">
+                    <defs>
+                      <linearGradient id="home-sky" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stopColor="#f6eedd" />
+                        <stop offset="0.6" stopColor="#ead6b0" />
+                        <stop offset="1" stopColor="#d4b483" />
+                      </linearGradient>
+                    </defs>
+                    <rect width="1200" height="400" fill="url(#home-sky)" />
+                    <g className="sun">
+                      <circle cx="930" cy="120" r="56" fill="#fbf5e8" />
+                      <circle cx="930" cy="120" r="120" fill="#fbf5e8" opacity="0.4" />
+                    </g>
+                    <polygon points="560,300 560,170 590,162 600,190 630,186 630,120 652,108 662,140 700,140 700,230 760,230 760,156 784,146 792,174 820,170 820,300" fill="#d9c09a" />
+                    <polygon points="980,300 980,200 1010,192 1020,216 1050,212 1050,150 1068,142 1080,170 1120,170 1120,250 1180,250 1180,300" fill="#d9c09a" />
+                    <g fill="#c0a173">
+                      <rect x="600" y="270" width="600" height="16" />
+                      <rect x="640" y="286" width="20" height="60" />
+                      <rect x="820" y="286" width="20" height="60" />
+                      <rect x="1000" y="286" width="20" height="60" />
+                    </g>
+                    <g stroke="#a88c62" strokeWidth="2">
+                      <line x1="880" y1="320" x2="892" y2="196" />
+                      <line x1="868" y1="210" x2="916" y2="206" />
+                    </g>
+                    <polygon points="0,330 260,300 520,320 760,296 1000,314 1200,300 1200,400 0,400" fill="#cfae7c" />
+                    <polygon points="0,370 320,346 640,364 900,340 1200,356 1200,400 0,400" fill="#bf9a66" />
+                    <g fill="#8a6c47">
+                      <path d="M860 368 h110 l12 -20 h-36 l-12 -14 h-46 l-14 18 h-14 z" />
+                      <circle cx="880" cy="370" r="9" />
+                      <circle cx="954" cy="370" r="9" />
+                    </g>
+                    <g transform="translate(1060 200)">
+                      <circle r="44" fill="none" stroke="#b4471c" strokeWidth="4" />
+                      <circle r="26" fill="none" stroke="#b4471c" strokeWidth="2" strokeDasharray="5 5" />
+                      <path d="M-14 0 H14 M0 -14 V14" stroke="#b4471c" strokeWidth="3" />
+                    </g>
+                  </svg>
                   <span className="coordinates">
-                    35°40′ N — 139°45′ E<br />
-                    SECTOR 07 / TRAINING FACILITY
+                    DAY 0417 — 汚染区域 第7セクター
+                    <br />
+                    SECTOR 07 / FIELD RANGE
                   </span>
                 </div>
                 <div className="hero-copy">
-                  <span className="tag">● FIRING RANGE ONLINE</span>
+                  <span className="tag">FIELD RANGE OPEN</span>
                   <h2>
-                    FOCUS.
-                    <br />
                     AIM.
+                    <br />
+                    SURVIVE.
                     <br />
                     <em>REPEAT.</em>
                   </h2>
                   <p>
-                    静止・移動ターゲットで、3種の武器をマスター。
+                    荒野の射撃場で、6種の武器を試し撃ち。
                     <br />
                     時間制限なし。何度でも、納得のいくまで。
                   </p>
@@ -620,9 +651,9 @@ export function App() {
                   <div>
                     <span>LOADOUT</span>
                     <h3>
-                      3 <small>ウェポン</small>
+                      6 <small>ウェポン</small>
                     </h3>
-                    <p>AR / SMG / DMR</p>
+                    <p>AR / SMG / DMR / LMG / SG / HG</p>
                   </div>
                 </article>
                 <article className="metric-card">
@@ -855,7 +886,7 @@ export function App() {
           )}
           <footer>
             <span>サバイバー</span>
-            <span>NO ACCOUNTS. JUST PRACTICE.</span>
+            <span>NO ACCOUNTS. JUST SURVIVE.</span>
           </footer>
         </main>
       </div>
