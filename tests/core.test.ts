@@ -206,3 +206,49 @@ describe("settings storage", () => {
     expect(SAVE_KEY).toBe("dropzone-save-v1");
   });
 });
+import {
+  TRAINING_RACK,
+  nearestRack,
+  takeFromRack,
+  activeWeapon,
+} from "../src/core/training";
+describe("range weapon rack and 3D stage", () => {
+  const playAt = (x: number, z: number) => {
+    const s = createTraining(7);
+    s.phase = "playing";
+    s.player.position = { x, y: 0, z };
+    return s;
+  };
+  it("rack holds all six weapons behind the start line", () => {
+    expect(TRAINING_RACK.map((r) => r.weapon)).toEqual([
+      "ar",
+      "smg",
+      "dmr",
+      "lmg",
+      "sg",
+      "hg",
+    ]);
+    expect(nearestRack(playAt(0, 0))).toBeNull();
+  });
+  it("E at the rack fills the empty slot, then swaps the held weapon; 1/2 switch slots", () => {
+    const smg = TRAINING_RACK.find((r) => r.weapon === "smg")!;
+    const s = playAt(smg.position.x, -3.1);
+    stepTraining(s, { ...emptyInput(), interactPressed: true }, 1 / 60);
+    expect(s.player.inventory.slots.map((w) => w?.id)).toEqual(["ar", "smg"]);
+    expect(activeWeapon(s).id).toBe("smg");
+    stepTraining(s, { ...emptyInput(), switchSlot: 0 }, 1 / 60);
+    expect(activeWeapon(s).id).toBe("ar");
+    expect(takeFromRack(s, "dmr")).toBe("replaced");
+    expect(s.player.inventory.slots.map((w) => w?.id)).toEqual(["dmr", "smg"]);
+    expect(takeFromRack(s, "smg")).toBe("switched");
+    expect(s.player.inventory.activeSlot).toBe(1);
+  });
+  it("walks up the stairs onto the raised platform", () => {
+    const s = playAt(-8.8, -6.5);
+    s.player.facing.yaw = Math.PI / 2; // facing -x
+    for (let i = 0; i < 240; i++)
+      stepTraining(s, { ...emptyInput(), forward: 1 }, 1 / 60);
+    expect(s.player.position.y).toBeCloseTo(2.4, 5);
+    expect(s.player.position.x).toBeLessThan(-13);
+  });
+});

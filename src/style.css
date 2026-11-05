@@ -778,6 +778,42 @@ footer {
   font-size: 20px;
   color: #6c87a2;
 }
+.slot-row {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+.slot-row .slot {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: calc(11px * var(--ui-scale));
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 9px;
+  border: 1px solid #41627e;
+  color: #9fb3c8;
+  background: #0b1520cc;
+}
+.slot-row .slot b {
+  color: #6c87a2;
+}
+.slot-row .slot.on {
+  border-color: #f79355;
+  color: #fff;
+  background: #3a2414cc;
+}
+.slot-row .slot.on b {
+  color: #f79355;
+}
+.slot-row .slot.empty {
+  opacity: 0.55;
+  font-weight: 500;
+}
+.rack-hint {
+  border-color: #f79355;
+}
 .range-hint {
   font-size: 10px;
   color: #c3d4e6;

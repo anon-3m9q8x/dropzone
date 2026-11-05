@@ -12,7 +12,70 @@ import {
   blocked,
   horizontalOverlap,
   nearestShot,
+  ELEVATED_TARGET_SPOTS,
 } from "./collision";
+import { WEAPON_IDS } from "./config";
+/** 射撃場の武器台。スタート地点の後ろに6種類が並ぶ(何度でも持っていける)。 */
+export const TRAINING_RACK = WEAPON_IDS.map((weapon, i) => ({
+  weapon,
+  position: { x: -5.5 + i * 2.2, y: 0.95, z: -4.1 },
+}));
+export const RACK_REACH_METERS = 2.2;
+export function nearestRack(s: TrainingSession) {
+  const p = s.player.position;
+  let best: (typeof TRAINING_RACK)[number] | null = null,
+    bestD = RACK_REACH_METERS;
+  for (const r of TRAINING_RACK) {
+    const d = Math.hypot(r.position.x - p.x, r.position.z - p.z);
+    if (d <= bestD && Math.abs(r.position.y - (p.y + 1)) < 1.6) {
+      best = r;
+      bestD = d;
+    }
+  }
+  return best;
+}
+export const activeWeapon = (s: {
+  player: { inventory: { slots: (WeaponState | null)[]; activeSlot: number } };
+}) =>
+  s.player.inventory.slots[s.player.inventory.activeSlot] ??
+  s.player.inventory.slots[0]!;
+/** 手持ちの1番/2番を切り替える(空のスロットには切り替えない)。 */
+export function selectSlot(s: TrainingSession, slot: 0 | 1) {
+  const inv = s.player.inventory;
+  const next = inv.slots[slot];
+  if (!next || inv.activeSlot === slot) return false;
+  const cur = activeWeapon(s);
+  cur.reloadRemainingSeconds = 0;
+  cur.triggerPressedLastTick = true;
+  next.triggerPressedLastTick = true;
+  next.reloadRemainingSeconds = 0;
+  inv.activeSlot = slot;
+  return true;
+}
+/** 武器台から武器を取る。持っていれば持ち替え、空きがあれば2番へ、なければ今の武器と入れ替える。 */
+export function takeFromRack(s: TrainingSession, id: WeaponId) {
+  const inv = s.player.inventory;
+  const held = inv.slots.findIndex((w) => w?.id === id);
+  if (held === 0 || held === 1) {
+    selectSlot(s, held);
+    return "switched" as const;
+  }
+  const cur = activeWeapon(s);
+  cur.reloadRemainingSeconds = 0;
+  cur.triggerPressedLastTick = true;
+  s.practiceWeapons[cur.id] = cur;
+  const next = s.practiceWeapons[id];
+  next.triggerPressedLastTick = true;
+  next.reloadRemainingSeconds = 0;
+  const empty = inv.slots.findIndex((w) => !w);
+  if (empty === 0 || empty === 1) {
+    inv.slots[empty] = next;
+    inv.activeSlot = empty;
+    return "added" as const;
+  }
+  inv.slots[inv.activeSlot] = next;
+  return "replaced" as const;
+}
 export const emptyInput = (): PlayerInput => ({
   forward: 0,
   strafe: 0,
@@ -147,7 +210,8 @@ export function createTraining(
   };
 }
 export function switchWeapon(s: TrainingSession, id: WeaponId) {
-  const current = s.player.inventory.slots[0];
+  const slot = s.player.inventory.activeSlot;
+  const current = s.player.inventory.slots[slot];
   if (current) {
     current.reloadRemainingSeconds = 0;
     current.triggerPressedLastTick = true;
@@ -156,7 +220,7 @@ export function switchWeapon(s: TrainingSession, id: WeaponId) {
   const next = s.practiceWeapons[id];
   next.triggerPressedLastTick = true;
   next.reloadRemainingSeconds = 0;
-  s.player.inventory.slots[0] = next;
+  s.player.inventory.slots[slot] = next;
 }
 export function random(s: TrainingSession) {
   let x = s.rngState;
@@ -179,7 +243,16 @@ export function stepTraining(
     throw Error("無効なtick間隔");
   s.elapsedSeconds += dt;
   const p = s.player;
-  const w = p.inventory.slots[0];
+  if (input.switchSlot !== null && boxes === trainingColliders)
+    selectSlot(s, input.switchSlot);
+  if (input.interactPressed && boxes === trainingColliders) {
+    const r = nearestRack(s);
+    if (r) {
+      takeFromRack(s, r.weapon);
+      events.push({ type: "sound", cue: "pickup" });
+    }
+  }
+  const w = activeWeapon(s);
   if (!w) return events;
   const def = weaponDefinition(w.id);
   p.facing.yaw += input.yawDeltaRadians;
@@ -219,24 +292,27 @@ export function stepTraining(
         length) *
       speed *
       dt;
-  if (
-    !blocked(
-      { ...p.position, x: p.position.x + x },
-      bodyHeight,
-      CONFIG.world.playerRadiusMeters,
-      boxes,
-    )
-  )
-    p.position.x += x;
-  if (
-    !blocked(
-      { ...p.position, z: p.position.z + z },
-      bodyHeight,
-      CONFIG.world.playerRadiusMeters,
-      boxes,
-    )
-  )
-    p.position.z += z;
+  const r = CONFIG.world.playerRadiusMeters;
+  // 段差(階段)は0.45mまでなら歩いて上れる。
+  const tryMove = (next: typeof p.position) => {
+    if (!blocked(next, bodyHeight, r, boxes)) return next;
+    if (!p.grounded) return null;
+    let top = -Infinity;
+    for (const b of boxes)
+      if (
+        horizontalOverlap(next, r, b) &&
+        b.max.y > p.position.y + 1e-4 &&
+        b.min.y < p.position.y + bodyHeight
+      )
+        top = Math.max(top, b.max.y);
+    if (top - p.position.y > 0.45) return null;
+    const up = { ...next, y: top };
+    return blocked(up, bodyHeight, r, boxes) ? null : up;
+  };
+  const mx = tryMove({ ...p.position, x: p.position.x + x });
+  if (mx) p.position = mx;
+  const mz = tryMove({ ...p.position, z: p.position.z + z });
+  if (mz) p.position = mz;
   if (input.jumpPressed && p.grounded) {
     p.velocity.y = CONFIG.world.jumpInitialMetersPerSecond;
     p.grounded = false;
@@ -383,6 +459,29 @@ export function stepTraining(
 
 function spawnTarget(s: TrainingSession) {
   const n = ++s.targetSequence;
+  // 3体に1体は高い場所(ブリッジ・コンテナ・土手)に出す。
+  if (n % 3 === 1) {
+    const free = ELEVATED_TARGET_SPOTS.filter((spot) =>
+      s.training.targets.every(
+        (t) => Math.hypot(spot.x - t.position.x, spot.z - t.position.z) > 2.5,
+      ),
+    );
+    const spot = free[Math.floor(random(s) * free.length)];
+    if (spot) {
+      const moving = "moving" in spot && spot.moving;
+      s.training.targets.push({
+        id: `target-${n}`,
+        position: { x: spot.x, y: spot.y, z: spot.z },
+        isMoving: moving,
+        movementMinX: moving ? -6 : spot.x,
+        movementMaxX: moving ? 6 : spot.x,
+        direction: moving ? 1 : 0,
+        speedMetersPerSecond: 1.6,
+        hitCount: 0,
+      });
+      return;
+    }
+  }
   let position = { x: 0, y: 1, z: 30 };
   for (let i = 0; i < 64; i++) {
     const candidate = {

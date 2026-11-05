@@ -15,13 +15,31 @@ const names = {
   sg: "SHOTGUN",
   hg: "HANDGUN",
 };
+const weaponJa = {
+  ar: "アサルトライフル",
+  smg: "サブマシンガン",
+  dmr: "マークスマンライフル",
+  lmg: "ライトマシンガン",
+  sg: "ショットガン",
+  hg: "ハンドガン",
+};
+const weaponShort = {
+  ar: "AR",
+  smg: "SMG",
+  dmr: "DMR",
+  lmg: "LMG",
+  sg: "SG",
+  hg: "HG",
+};
 const controls = [
   ["W A S D", "移動"],
   ["マウス", "視点・照準"],
   ["左クリック", "射撃"],
   ["右クリック（長押し）", "ADS / 精密照準"],
   ["R", "再装填"],
-  ["1 〜 6", "AR / SMG / DMR / LMG / SG / HG"],
+  ["1 〜 6", "武器の切り替え（CPU対戦・バトルロイヤル）"],
+  ["E（射撃場）", "武器台から武器を取る（2つまで持てる）"],
+  ["1 / 2 / Q / ホイール（射撃場）", "持っている2つの武器を持ち替え"],
   ["Shift", "ダッシュ"],
   ["Ctrl", "しゃがむ"],
   ["Space", "ジャンプ"],
@@ -77,6 +95,9 @@ function Training({
     heal: 0,
     outside: false,
     matchId: "",
+    slots: ["ar", null],
+    activeSlot: 0,
+    rack: "",
   });
   useEffect(() => {
     if (!host.current) return;
@@ -204,6 +225,15 @@ function Training({
           安全地帯の外です！ 青い円の中心へ移動してください
         </div>
       )}
+      {hud.rack && (
+        <div className="pickup-hint rack-hint">
+          {hud.slots.includes(hud.rack)
+            ? `E で ${weaponJa[hud.rack]} に持ち替える`
+            : hud.slots.every(Boolean)
+              ? `E で ${weaponJa[hud.rack]} を取る（今の${weaponJa[hud.weapon]}と入れ替え）`
+              : `E で ${weaponJa[hud.rack]} を取る`}
+        </div>
+      )}
       {hud.pickup && (
         <div className="pickup-hint">
           E で{" "}
@@ -231,9 +261,24 @@ function Training({
           {mode !== "training" && <small>H 回復キット × {hud.medkits}</small>}
         </div>
         <div className="range-hint">
-          WASD 移動 · 右クリック ADS · R 再装填 · Esc 停止
+          {mode === "training"
+            ? "WASD 移動 · 右クリック ADS · R 再装填 · 1/2・Q・ホイール 持ち替え · E 武器台から取る · Esc 停止"
+            : "WASD 移動 · 右クリック ADS · R 再装填 · Esc 停止"}
         </div>
         <div className="ammo">
+          {mode === "training" && (
+            <div className="slot-row" aria-label="手持ちの武器">
+              {hud.slots.map((w, i) => (
+                <span
+                  key={i}
+                  className={`slot ${i === hud.activeSlot ? "on" : ""} ${w ? "" : "empty"}`}
+                >
+                  <b>{i + 1}</b>
+                  {w ? weaponShort[w] : "空き"}
+                </span>
+              ))}
+            </div>
+          )}
           <span>{names[hud.weapon]}</span>
           <strong>
             {hud.ammo.toString().padStart(2, "0")}{" "}
@@ -275,7 +320,8 @@ function Training({
               {mode === "training" ? (
                 <>
                   <span>的に命中すると倒れます</span>
-                  <span>次々と新しい的が登場</span>
+                  <span>後ろの武器台で武器を2つまで持てます</span>
+                  <span>高台・ブリッジの上にも的が出ます</span>
                 </>
               ) : (
                 <>
@@ -383,9 +429,7 @@ export function App() {
           <span className="brand-mark">
             S<span>∕</span>
           </span>
-          <div>
-            サバイバー
-          </div>
+          <div>サバイバー</div>
         </a>
         <div className="sidebar-label">OPERATIONS</div>
         <nav aria-label="メインナビゲーション">

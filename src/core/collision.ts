@@ -48,7 +48,130 @@ export const trainingColliders: Aabb[] = [
     min: { x: 9, y: 0, z: 18 },
     max: { x: 12, y: 1.7, z: 21 },
   },
+  // 武器台(スタート地点の後ろ)。上に6種類の武器が置いてある。
+  {
+    id: "rack-bench",
+    solid: true,
+    min: { x: -7, y: 0, z: -4.7 },
+    max: { x: 7, y: 0.9, z: -3.5 },
+  },
+  // 左後方の高台と、そこへ上る階段(1段0.4m)。
+  {
+    id: "platform-left",
+    solid: true,
+    min: { x: -20, y: 0, z: -10 },
+    max: { x: -13, y: 2.4, z: -3 },
+  },
+  ...Array.from({ length: 6 }, (_, i) => ({
+    id: `stair-left-${i + 1}`,
+    solid: true,
+    min: { x: -13 + (5 - i) * 0.6, y: 0, z: -8 },
+    max: { x: -13 + (6 - i) * 0.6, y: 0.4 * (i + 1), z: -5 },
+  })),
+  {
+    id: "rail-left-front",
+    solid: true,
+    min: { x: -20, y: 2.4, z: -3.12 },
+    max: { x: -13, y: 3.4, z: -3 },
+  },
+  {
+    id: "rail-left-side",
+    solid: true,
+    min: { x: -13.12, y: 2.4, z: -5 },
+    max: { x: -13, y: 3.4, z: -3 },
+  },
+  // 窓の開いた壁(左中央)。窓越しに撃てる。
+  {
+    id: "cover-window-low",
+    solid: true,
+    min: { x: -15, y: 0, z: 12 },
+    max: { x: -11, y: 0.9, z: 12.6 },
+  },
+  {
+    id: "cover-window-left",
+    solid: true,
+    min: { x: -15, y: 0.9, z: 12 },
+    max: { x: -14.2, y: 2.4, z: 12.6 },
+  },
+  {
+    id: "cover-window-right",
+    solid: true,
+    min: { x: -11.8, y: 0.9, z: 12 },
+    max: { x: -11, y: 2.4, z: 12.6 },
+  },
+  {
+    id: "cover-window-top",
+    solid: true,
+    min: { x: -15, y: 1.7, z: 12 },
+    max: { x: -11, y: 2.4, z: 12.6 },
+  },
+  {
+    id: "cover-barrel-1",
+    solid: true,
+    min: { x: 6.6, y: 0, z: 9.6 },
+    max: { x: 7.4, y: 1.1, z: 10.4 },
+  },
+  {
+    id: "cover-barrel-2",
+    solid: true,
+    min: { x: 7.6, y: 0, z: 10 },
+    max: { x: 8.4, y: 1.1, z: 10.8 },
+  },
+  // 中央奥の高架ブリッジ(上に的が立つ)。
+  {
+    id: "bridge-deck",
+    solid: true,
+    min: { x: -8, y: 3.2, z: 26.4 },
+    max: { x: 8, y: 3.5, z: 27.6 },
+  },
+  {
+    id: "bridge-pillar-left",
+    solid: true,
+    min: { x: -8.4, y: 0, z: 26.6 },
+    max: { x: -7.6, y: 3.2, z: 27.4 },
+  },
+  {
+    id: "bridge-pillar-right",
+    solid: true,
+    min: { x: 7.6, y: 0, z: 26.6 },
+    max: { x: 8.4, y: 3.2, z: 27.4 },
+  },
+  // 右奥のコンテナ2段積み(上に的が立つ)。
+  {
+    id: "stack-right-low",
+    solid: true,
+    min: { x: 14, y: 0, z: 24 },
+    max: { x: 20, y: 2.6, z: 30 },
+  },
+  {
+    id: "stack-right-high",
+    solid: true,
+    min: { x: 15.5, y: 2.6, z: 25.5 },
+    max: { x: 20, y: 4.4, z: 28.5 },
+  },
+  // 奥の段々の土手。
+  {
+    id: "berm-1",
+    solid: true,
+    min: { x: -20, y: 0, z: 36 },
+    max: { x: 20, y: 0.8, z: 40 },
+  },
+  {
+    id: "berm-2",
+    solid: true,
+    min: { x: -20, y: 0.8, z: 38 },
+    max: { x: 20, y: 1.6, z: 40 },
+  },
 ];
+/** 高い場所にある的の置き場所(的の中心の高さ = 足場の上面 + 1m)。 */
+export const ELEVATED_TARGET_SPOTS = [
+  { x: -4, y: 4.5, z: 27, moving: true },
+  { x: 4, y: 4.5, z: 27, moving: false },
+  { x: 16.8, y: 3.6, z: 26 },
+  { x: 17.8, y: 5.4, z: 27 },
+  { x: -10, y: 2.6, z: 38.8 },
+  { x: 10, y: 2.6, z: 38.8 },
+] as const;
 export function rayAabb(
   origin: Vec3,
   direction: Vec3,
