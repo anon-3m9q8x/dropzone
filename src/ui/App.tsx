@@ -7,6 +7,7 @@ import type { Hud } from "../render/Range";
 import { readSave, writeSettings, emptySave } from "../core/storage";
 import { configResult } from "../core/config";
 import type { SettingsV1 } from "../core/types";
+import { BriefingScreen, LoadingScreen, LobbyScreen } from "./Standby";
 const names = {
   ar: "ASSAULT RIFLE",
   smg: "SUBMACHINE GUN",
@@ -66,6 +67,7 @@ function Training({
     engine = useRef<Range | null>(null);
   const [error, setError] = useState("");
   const [recordNote, setRecordNote] = useState("");
+  const [stage, setStage] = useState<"loading" | "standby">("loading");
   const [hud, setHud] = useState<Hud>({
     phase: "ready",
     shots: 0,
@@ -293,6 +295,31 @@ function Training({
           </span>
         </div>
       </div>
+      {stage === "loading" && (
+        <LoadingScreen
+          mode={mode}
+          fast={settings.reducedMotion}
+          onDone={() => setStage("standby")}
+          onCancel={onExit}
+        />
+      )}
+      {stage === "standby" &&
+        hud.phase === "ready" &&
+        !hud.outcome &&
+        !error &&
+        (mode === "br" ? (
+          <BriefingScreen
+            spawn={{ x: hud.x, z: hud.z }}
+            onStart={() => engine.current?.start()}
+            onExit={onExit}
+          />
+        ) : (
+          <LobbyScreen
+            mode={mode}
+            onStart={() => engine.current?.start()}
+            onExit={onExit}
+          />
+        ))}
       {hud.phase !== "playing" && (
         <div className="overlay">
           <section className="pause-card">
@@ -554,7 +581,7 @@ export function App() {
                         ? "ENDLESS RANGE"
                         : id === "cpu"
                           ? "CPU SKIRMISH"
-                          : "LAST SIGNAL"}
+                          : "SURVIVOR"}
                     </span>
                     <h2>{modeNames[id]}</h2>
                     <p>
@@ -665,7 +692,7 @@ export function App() {
                 </section>
                 <section className="panel next-panel">
                   <span className="eyebrow">BATTLE ROYALE</span>
-                  <h2>LAST SIGNAL</h2>
+                  <h2>SURVIVOR</h2>
                   <span className="outline-tag">プレイ可能</span>
                   <p>
                     CPU 7体とのバトルロイヤル。
